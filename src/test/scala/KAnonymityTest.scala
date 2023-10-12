@@ -1,7 +1,7 @@
 import org.apache.spark.sql.SparkSession
 import org.scalatest.BeforeAndAfterAll
 import kanonymity.KAnonymity._
-import kanonymity.RangeGeneralization
+import kanonymity.{RangeGeneralisation, MappingGeneralisation}
 import org.scalatest.funsuite.AnyFunSuite
 import scala.collection.immutable.Seq
 
@@ -105,7 +105,7 @@ class KAnonymityTest extends AnyFunSuite with BeforeAndAfterAll {
 
   test("RangeGeneralization correctly generalizes numeric column values") {
     val data = Seq(1, 5, 13, 15, 29, 30, 35).toDF("Numbers")
-    val strategy = RangeGeneralization("Numbers", 10)
+    val strategy = RangeGeneralisation("Numbers", 10)
 
     val generalizedData = strategy(data)
     val results = generalizedData.collect().map(row => row.getString(0))
@@ -115,7 +115,7 @@ class KAnonymityTest extends AnyFunSuite with BeforeAndAfterAll {
 
   test("RangeGeneralization handles negative values correctly, with separator") {
     val data = Seq(-5, -2, 0, 3, 12).toDF("Numbers")
-    val strategy = RangeGeneralization("Numbers", 10, ":")
+    val strategy = RangeGeneralisation("Numbers", 10, ":")
 
     val generalizedData = strategy(data)
     val results = generalizedData.collect().map(row => row.getString(0))
@@ -125,7 +125,7 @@ class KAnonymityTest extends AnyFunSuite with BeforeAndAfterAll {
 
   test("RangeGeneralization handles empty DataFrame") {
     val data = Seq.empty[Int].toDF("Numbers")
-    val strategy = RangeGeneralization("Numbers", 10)
+    val strategy = RangeGeneralisation("Numbers", 10)
 
     val generalizedData = strategy(data)
     assert(generalizedData.count() === 0)
@@ -133,11 +133,22 @@ class KAnonymityTest extends AnyFunSuite with BeforeAndAfterAll {
 
   test("RangeGeneralisation from KAnonymity object") {
     val data = Seq(1, 2, 3,4 ,5 ,6 ,7 ,8 ,9, 10).toDF("Numbers")
-    val strategy = RangeGeneralization("Numbers", 5)
+    val strategy = RangeGeneralisation("Numbers", 5)
 
-    val result = generalise(data, Seq(strategy))
-    print("")
+    val result = generalise(data, Seq(strategy)).collect().map(row => row.getString(0))
+    assert(result sameElements Array("0-4", "0-4", "0-4", "0-4", "5-9", "5-9", "5-9", "5-9", "5-9", "10-14"))
+  }
 
+  test("MappingGeneralisation correctly maps values based on provided mapping") {
+    val data = Seq("A", "B", "C", "D", "E").toDF("Letters")
+
+    val mapping = Map("A" -> "X", "B" -> "Y", "C" -> "Z")
+    val strategy = MappingGeneralisation("Letters", mapping)
+
+    val generalizedData = strategy(data)
+    val results = generalizedData.collect().map(row => row.getString(0))
+
+    assert(results sameElements Array("X", "Y", "Z", "D", "E"))
   }
 
 }
