@@ -131,4 +131,13 @@ class KAnonymityTest extends AnyFunSuite with BeforeAndAfterAll {
     assert(generalizedData.count() === 0)
   }
 
+  test("RangeGeneralisation from KAnonymity object") {
+    val data = Seq(1, 2, 3,4 ,5 ,6 ,7 ,8 ,9, 10).toDF("Numbers")
+    val strategy = RangeGeneralization("Numbers", 5)
+
+    val result = generalise(data, Seq(strategy))
+    print("")
+
+  }
+
 }
