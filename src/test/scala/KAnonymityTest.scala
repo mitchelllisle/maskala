@@ -1,6 +1,7 @@
 import org.apache.spark.sql.SparkSession
 import org.scalatest.BeforeAndAfterAll
-import KAnonymity._
+import kanonymity.KAnonymity._
+import kanonymity.RangeGeneralization
 import org.scalatest.funsuite.AnyFunSuite
 import scala.collection.immutable.Seq
 
@@ -100,6 +101,43 @@ class KAnonymityTest extends AnyFunSuite with BeforeAndAfterAll {
     val result = filterKAnonymous(data, 2, Seq("UserID"))
 
     assert(result.except(data).count() == 0 && data.except(result).count() == 0)
+  }
+
+  test("RangeGeneralization correctly generalizes numeric column values") {
+    val data = Seq(1, 5, 13, 15, 29, 30, 35).toDF("Numbers")
+    val strategy = RangeGeneralization("Numbers", 10)
+
+    val generalizedData = strategy(data)
+    val results = generalizedData.collect().map(row => row.getString(0))
+
+    assert(results sameElements Array("0-9", "0-9", "10-19", "10-19", "20-29", "30-39", "30-39"))
+  }
+
+  test("RangeGeneralization handles negative values correctly, with separator") {
+    val data = Seq(-5, -2, 0, 3, 12).toDF("Numbers")
+    val strategy = RangeGeneralization("Numbers", 10, ":")
+
+    val generalizedData = strategy(data)
+    val results = generalizedData.collect().map(row => row.getString(0))
+
+    assert(results sameElements Array("-10:-1", "-10:-1", "0:9", "0:9", "10:19"))
+  }
+
+  test("RangeGeneralization handles empty DataFrame") {
+    val data = Seq.empty[Int].toDF("Numbers")
+    val strategy = RangeGeneralization("Numbers", 10)
+
+    val generalizedData = strategy(data)
+    assert(generalizedData.count() === 0)
+  }
+
+  test("RangeGeneralisation from KAnonymity object") {
+    val data = Seq(1, 2, 3,4 ,5 ,6 ,7 ,8 ,9, 10).toDF("Numbers")
+    val strategy = RangeGeneralization("Numbers", 5)
+
+    val result = generalise(data, Seq(strategy))
+    print("")
+
   }
 
 }

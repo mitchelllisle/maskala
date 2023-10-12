@@ -1,5 +1,7 @@
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.{functions => F}
+package kanonymity
+
+import org.apache.spark.sql.{DataFrame, functions => F}
+
 import java.security.MessageDigest
 
 object KAnonymity {
@@ -73,16 +75,22 @@ object KAnonymity {
    *         `Right(false)` if not,
    *         and `Left(error message)` if an error occurs.
    */
-  def isKAnonymous(data: DataFrame, k: Int, ignoreColumns: Seq[String] = Seq.empty): Either[String, Boolean] = {
-    if (k < 1) {
+  def isKAnonymous(data: DataFrame, k: Int, ignoreColumns: Seq[String] = Seq.empty): Either[String, Boolean] = k match {
+    case _ if k < 1 =>
       Left("k must be greater than or equal to 1")
-    } else {
+
+    case _ =>
       val countsDf = getRowFrequencyCounts(data, ignoreColumns)
       val minCount = countsDf
         .agg(F.min("count").as("min"))
         .first()
         .getAs[Long]("min")
       Right(minCount >= k)
+  }
+
+  def generalise(data: DataFrame, strategies: Seq[GeneralisationStrategy]): DataFrame = {
+    strategies.foldLeft(data) { (currentData, strategy) =>
+      strategy.apply(currentData)
     }
   }
 }
