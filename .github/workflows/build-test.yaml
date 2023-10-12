@@ -22,7 +22,7 @@ jobs:
           distribution: 'temurin'
           cache: 'sbt'
       - name: Run tests
-        run: sbt clean coverage test coverageReport
+        run: make test
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         env:
