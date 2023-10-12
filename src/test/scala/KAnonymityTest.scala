@@ -6,7 +6,7 @@ import org.scalatest.funsuite.AnyFunSuite
 class KAnonymityTest extends AnyFunSuite with BeforeAndAfterAll {
   val spark: SparkSession = SparkSession.builder()
     .appName("KAnonymityTests")
-    .master("local[*]") // Use local mode for tests
+    .master("local[*]")
     .getOrCreate()
 
   override def afterAll(): Unit = {
@@ -23,10 +23,12 @@ class KAnonymityTest extends AnyFunSuite with BeforeAndAfterAll {
       ("1234", "Male"),
       ("1236", "Female"),
       ("1236", "Female")
-    )
+    ).toDF("ID", "Gender")
 
-    val df = data.toDF("ID", "Gender")
-    assert(isKAnonymous(df, 2))
+    isKAnonymous(data, 2) match {
+      case Left(error) => fail(s"expected success but got error: $error")
+      case Right(value) => assert(value)
+    }
   }
 
   test("isKAnonymous returns false for non k-anonymous data") {
@@ -40,7 +42,10 @@ class KAnonymityTest extends AnyFunSuite with BeforeAndAfterAll {
     )
 
     val df = data.toDF("ID", "Gender")
-    assert(!isKAnonymous(df, 2))
+    isKAnonymous(df, 2) match {
+      case Left(error) => fail(s"expected success but received error: $error")
+      case Right(value) => assert(!value)
+    }
   }
 
 }
