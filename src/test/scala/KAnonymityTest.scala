@@ -10,13 +10,13 @@ class KAnonymityTest extends AnyFunSuite with BeforeAndAfterAll {
     .master("local[*]")
     .getOrCreate()
 
+  import spark.implicits._
+
   override def afterAll(): Unit = {
     if (spark != null) {
       spark.stop()
     }
   }
-
-  import spark.implicits._
 
   test("isKAnonymous returns true for k-anonymous data") {
 
@@ -47,6 +47,14 @@ class KAnonymityTest extends AnyFunSuite with BeforeAndAfterAll {
     isKAnonymous(df, 2) match {
       case Left(error) => fail(s"expected success but received error: $error")
       case Right(value) => assert(!value)
+    }
+  }
+
+  test("k less than one must error") {
+    val data = Seq(("1234", "Male")).toDF()
+    isKAnonymous(data, -1) match {
+      case Left(error) => assert(error.nonEmpty)
+      case _ => fail("this test was supposed to throw a Left(error)")
     }
   }
 
@@ -82,17 +90,16 @@ class KAnonymityTest extends AnyFunSuite with BeforeAndAfterAll {
 
   test("filterKAnonymous handles ignoring specified columns") {
     val data = Seq(
-      ("1234", "Male", "New York"),
-      ("1234", "Male", "Los Angeles"),
-      ("1235", "Male", "Boston"),
-      ("1235", "Male", "Chicago")
-    ).toDF("ID", "Gender", "City")
+      ("1234", "Male", "user1"),
+      ("1234", "Male", "user2"),
+      ("1235", "Male", "user3"),
+      ("1235", "Male", "user4")
+    ).toDF("Dept", "Gender", "UserID")
 
-    // Here we ignore the "City" column when determining k-anonymity
-    val result = filterKAnonymous(data, 2, Seq("City"))
-    val expected = data // The expected output remains unchanged since the "City" column is ignored
+    // Here we ignore the "UserId" column when determining k-anonymity
+    val result = filterKAnonymous(data, 2, Seq("UserID"))
 
-    assert(result.except(expected).count() == 0 && expected.except(result).count() == 0)
+    assert(result.except(data).count() == 0 && data.except(result).count() == 0)
   }
 
 }
