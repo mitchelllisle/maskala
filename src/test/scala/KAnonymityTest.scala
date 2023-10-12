@@ -1,6 +1,6 @@
 import org.apache.spark.sql.SparkSession
 import org.scalatest.BeforeAndAfterAll
-import KAnonymity._
+import kanonymity.KAnonymity._
 import org.scalatest.funsuite.AnyFunSuite
 import scala.collection.immutable.Seq
 
