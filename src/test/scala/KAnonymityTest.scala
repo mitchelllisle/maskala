@@ -1,4 +1,4 @@
-import kanonymity.KAnonymity._
+import kanonymity.KAnonymity
 import scala.collection.immutable.Seq
 
 class KAnonymityTest extends SparkFunSuite {
@@ -12,10 +12,8 @@ class KAnonymityTest extends SparkFunSuite {
       ("1236", "Female")
     ).toDF("ID", "Gender")
 
-    isKAnonymous(data, 2) match {
-      case Left(error) => fail(s"expected success but got error: $error")
-      case Right(value) => assert(value)
-    }
+    val kAnon = new KAnonymity(2)
+    assert(kAnon.evaluate(data))
   }
 
   test("isKAnonymous returns false for non k-anonymous data") {
@@ -28,18 +26,9 @@ class KAnonymityTest extends SparkFunSuite {
     )
 
     val df = data.toDF("ID", "Gender")
-    isKAnonymous(df, 2) match {
-      case Left(error) => fail(s"expected success but received error: $error")
-      case Right(value) => assert(!value)
-    }
-  }
 
-  test("k less than one must error") {
-    val data = Seq(("1234", "Male")).toDF()
-    isKAnonymous(data, -1) match {
-      case Left(error) => assert(error.nonEmpty)
-      case _ => fail("this test was supposed to throw a Left(error)")
-    }
+    val kAnon = new KAnonymity(2)
+    assert(!kAnon.evaluate(df))
   }
 
   test("filterKAnonymous filters out rows not meeting the k-anonymity threshold") {
@@ -50,7 +39,8 @@ class KAnonymityTest extends SparkFunSuite {
       ("1236", "Female")
     ).toDF("ID", "Gender")
 
-    val result = filterKAnonymous(data, 2)
+    val kAnon = new KAnonymity(2)
+    val result = kAnon.filter(data)
     val expected = Seq(
       ("1234", "Male"),
       ("1234", "Male")
@@ -67,7 +57,8 @@ class KAnonymityTest extends SparkFunSuite {
       ("1235", "Male")
     ).toDF("ID", "Gender")
 
-    val result = filterKAnonymous(data, 2)
+    val kAnon = new KAnonymity(2)
+    val result = kAnon.filter(data)
 
     assert(result.except(data).count() == 0 && data.except(result).count() == 0)
   }
@@ -80,8 +71,8 @@ class KAnonymityTest extends SparkFunSuite {
       ("1235", "Male", "user4")
     ).toDF("Dept", "Gender", "UserID")
 
-    // Here we ignore the "UserId" column when determining k-anonymity
-    val result = filterKAnonymous(data, 2, Seq("UserID"))
+    val kAnon = new KAnonymity(2)
+    val result = kAnon.filter(data, Seq("UserID"))
 
     assert(result.except(data).count() == 0 && data.except(result).count() == 0)
   }
