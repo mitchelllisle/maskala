@@ -1,4 +1,4 @@
-import kanonymity.KAnonymity._
+import kanonymity.KAnonymity
 import kanonymity.generalisation.{MappingGeneralisation, RangeGeneralisation}
 import scala.collection.immutable.Seq
 
@@ -37,7 +37,8 @@ class RangeGeneralisationTest extends SparkFunSuite {
     val data = Seq(1, 2, 3,4 ,5 ,6 ,7 ,8 ,9, 10).toDF("Numbers")
     val strategy = RangeGeneralisation("Numbers", 5)
 
-    val result = generalise(data, Seq(strategy)).collect().map(row => row.getString(0))
+    val kAnon = new KAnonymity(2)
+    val result = kAnon.generalise(data, Seq(strategy)).collect().map(row => row.getString(0))
     assert(result sameElements Array("0-4", "0-4", "0-4", "0-4", "5-9", "5-9", "5-9", "5-9", "5-9", "10-14"))
   }
 }

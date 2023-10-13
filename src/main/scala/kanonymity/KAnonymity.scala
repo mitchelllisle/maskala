@@ -5,7 +5,7 @@ import org.apache.spark.sql.{DataFrame, functions => F}
 
 import java.security.MessageDigest
 
-object KAnonymity {
+class KAnonymity(k: Int) {
 
   private val hashUdf = F.udf[String, String](hashRow)
 
@@ -49,11 +49,10 @@ object KAnonymity {
    * Filters the dataframe to only include rows whose frequencies meet a minimum threshold (k).
    *
    * @param data          The dataframe to be filtered.
-   * @param k             The minimum frequency threshold.
    * @param ignoreColumns Columns to ignore while determining row uniqueness.
    * @return A dataframe with rows that meet the minimum frequency threshold.
    */
-  def filterKAnonymous(data: DataFrame, k: Int, ignoreColumns: Seq[String] = Seq.empty): DataFrame = {
+  def filter(data: DataFrame, ignoreColumns: Seq[String] = Seq.empty): DataFrame = {
     val columnsToConsider = data.columns.filterNot(ignoreColumns.contains)
     val countsDf = getRowFrequencyCounts(data, ignoreColumns)
     val hashedData = getHashedData(data, columnsToConsider)
@@ -69,24 +68,17 @@ object KAnonymity {
    * Determines if a dataframe satisfies the conditions of K-Anonymity.
    *
    * @param data          The dataframe to be checked for K-Anonymity.
-   * @param k             The minimum frequency threshold.
    * @param ignoreColumns Columns to ignore while determining row uniqueness.
-   * @throws IllegalArgumentException if k is less than 1.
-   * @return `Right(true)` if the dataframe satisfies K-Anonymity,
-   *         `Right(false)` if not,
-   *         and `Left(error message)` if an error occurs.
+   * @return `true` if the dataframe satisfies K-Anonymity,
+   *         `false` if not,
    */
-  def isKAnonymous(data: DataFrame, k: Int, ignoreColumns: Seq[String] = Seq.empty): Either[String, Boolean] = k match {
-    case _ if k < 1 =>
-      Left("k must be greater than or equal to 1")
-
-    case _ =>
-      val countsDf = getRowFrequencyCounts(data, ignoreColumns)
-      val minCount = countsDf
-        .agg(F.min("count").as("min"))
-        .first()
-        .getAs[Long]("min")
-      Right(minCount >= k)
+  def evaluate(data: DataFrame, ignoreColumns: Seq[String] = Seq.empty): Boolean = {
+    val countsDf = getRowFrequencyCounts(data, ignoreColumns)
+    val minCount = countsDf
+      .agg(F.min("count").as("min"))
+      .first()
+      .getAs[Long]("min")
+    minCount >= k
   }
 
   /**
