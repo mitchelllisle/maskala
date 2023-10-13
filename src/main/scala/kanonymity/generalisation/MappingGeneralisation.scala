@@ -1,4 +1,4 @@
-package kanonymity
+package kanonymity.generalisation
 
 import org.apache.spark.sql.{DataFrame, functions => F}
 
