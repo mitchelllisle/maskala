@@ -12,9 +12,11 @@ class LDiversity(l: Int, k: Int = 1) extends KAnonymity(k) {
    * @param l               The minimum number of distinct sensitive values that a group should have.
    * @return A boolean indicating if the DataFrame meets l-diversity.
    */
-  def evaluate(data: DataFrame, sensitiveColumn: String, l: Int): Boolean = {
+  def evaluate(data: DataFrame, sensitiveColumn: String): Boolean = {
+    val groupColumns = data.columns.filter(col => col != sensitiveColumn)
+
     val groupedData = data
-      .groupBy(data.columns.map(data(_)): _*)
+      .groupBy(groupColumns.map(data(_)): _*)
       .agg(F.countDistinct(sensitiveColumn).as("distinctCount"))
 
     groupedData.filter(F.col("distinctCount") < l).count() == 0

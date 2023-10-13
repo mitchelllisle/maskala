@@ -14,7 +14,7 @@ class LDiversityTest extends SparkFunSuite {
       ("B", "Other")
     ).toDF("QuasiIdentifier", "SensitiveAttribute")
 
-    assert(lDiv.evaluate(data, "SensitiveAttribute", 2))
+    assert(lDiv.evaluate(data, "SensitiveAttribute"))
   }
 
   test("Data does not meet l-diversity requirements") {
@@ -27,7 +27,7 @@ class LDiversityTest extends SparkFunSuite {
       ("B", "Other")
     ).toDF("QuasiIdentifier", "SensitiveAttribute")
 
-    assert(!lDiv.evaluate(data, "SensitiveAttribute", 3))
+    assert(!lDiv.evaluate(data, "SensitiveAttribute"))
   }
 
   test("l-diversity for multiple quasi-identifiers") {
@@ -42,11 +42,11 @@ class LDiversityTest extends SparkFunSuite {
       ("A", "Z", "Male")
     ).toDF("Quasi1", "Quasi2", "SensitiveAttribute")
 
-    assert(lDiv.evaluate(data, "SensitiveAttribute", 2))
+    assert(!lDiv.evaluate(data, "SensitiveAttribute"))
   }
 
   test("l-diversity with larger l requirement") {
-    val lDiv = new LDiversity(l = 2)
+    val lDiv = new LDiversity(l = 4)
 
     val data = Seq(
       ("A", "X", "Male"),
@@ -58,7 +58,7 @@ class LDiversityTest extends SparkFunSuite {
       ("A", "Z", "Male")
     ).toDF("Quasi1", "Quasi2", "SensitiveAttribute")
 
-    assert(!lDiv.evaluate(data, "SensitiveAttribute", 4))
+    assert(!lDiv.evaluate(data, "SensitiveAttribute"))
   }
 
 }
