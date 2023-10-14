@@ -1,0 +1,24 @@
+name: Publish Library
+
+on: push
+#  release:
+#    types: [created]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+
+      - name: Publish to GitHub Packages
+        run: sbt publish
+        env:
+          USERNAME: ${{ secrets.GITHUB_USERNAME }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
