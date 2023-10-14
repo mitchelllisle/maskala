@@ -1,4 +1,4 @@
-import kanonymity.KAnonymity
+import org.mitchelllisle.kanonymity.KAnonymity
 import scala.collection.immutable.Seq
 
 class KAnonymityTest extends SparkFunSuite {

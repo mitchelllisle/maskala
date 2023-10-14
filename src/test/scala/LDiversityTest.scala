@@ -1,4 +1,4 @@
-import ldiversity.LDiversity
+import org.mitchelllisle.ldiversity.LDiversity
 
 class LDiversityTest extends SparkFunSuite {
 

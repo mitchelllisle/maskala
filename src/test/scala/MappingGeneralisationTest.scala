@@ -1,4 +1,4 @@
-import kanonymity.generalisation.MappingGeneralisation
+import org.mitchelllisle.kanonymity.generalisation.MappingGeneralisation
 import scala.collection.immutable.Seq
 
 class MappingGeneralisationTest extends SparkFunSuite {

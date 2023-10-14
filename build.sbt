@@ -1,4 +1,4 @@
-ThisBuild / version := "0.5.0-SNAPSHOT"
+ThisBuild / version := "0.5.1-SNAPSHOT"
 
 ThisBuild / scalaVersion := "2.12.18"
 
@@ -11,6 +11,7 @@ lazy val root = (project in file("."))
     )
 
   )
+
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.2.15" % Test,
