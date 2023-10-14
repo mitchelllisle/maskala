@@ -20,5 +20,5 @@ jobs:
       - name: Publish to GitHub Packages
         run: sbt publish
         env:
-          USERNAME: ${{ secrets.GITHUB_USERNAME }}
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          USERNAME: ${{ secrets.USERNAME }}
+          TOKEN: ${{ secrets.TOKEN }}
