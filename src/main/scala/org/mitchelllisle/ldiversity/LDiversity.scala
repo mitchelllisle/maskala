@@ -1,7 +1,7 @@
-package ldiversity
+package org.mitchelllisle.ldiversity
 
-import kanonymity.KAnonymity
 import org.apache.spark.sql.{DataFrame, functions => F}
+import org.mitchelllisle.kanonymity.KAnonymity
 
 class LDiversity(l: Int, k: Int = 1) extends KAnonymity(k) {
   /**

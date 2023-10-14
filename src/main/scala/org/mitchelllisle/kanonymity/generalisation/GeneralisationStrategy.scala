@@ -1,4 +1,4 @@
-package kanonymity.generalisation
+package org.mitchelllisle.kanonymity.generalisation
 
 import org.apache.spark.sql.DataFrame
 

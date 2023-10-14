@@ -1,4 +1,4 @@
-import kanonymity.generalisation.{CustomLevel, DateGeneralisation, MonthYear, QuarterYear, YearOnly}
+import org.mitchelllisle.kanonymity.generalisation.{CustomLevel, DateGeneralisation, MonthYear, QuarterYear, YearOnly}
 
 
 class DateGeneralisationTest extends SparkFunSuite {

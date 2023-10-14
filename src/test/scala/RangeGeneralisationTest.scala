@@ -1,5 +1,5 @@
-import kanonymity.KAnonymity
-import kanonymity.generalisation.{MappingGeneralisation, RangeGeneralisation}
+import org.mitchelllisle.kanonymity.KAnonymity
+import org.mitchelllisle.kanonymity.generalisation.{MappingGeneralisation, RangeGeneralisation}
 import scala.collection.immutable.Seq
 
 class RangeGeneralisationTest extends SparkFunSuite {
