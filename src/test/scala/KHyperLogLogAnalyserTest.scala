@@ -1,19 +1,33 @@
 import org.apache.spark.sql.DataFrame
-import org.mitchelllisle.khyperloglog.{KHyperLogLogAnalyser, KLLRow}
+import org.mitchelllisle.khyperloglog.KHyperLogLogAnalyser
 
 class KHyperLogLogAnalyserTest extends SparkFunSuite {
-  val khll = new KHyperLogLogAnalyser(spark, k = 2056)
-  val table: DataFrame = khll.getTable("netflix", "ratings", "customerId", Seq("rating"))
+  val k = 2056
+  val khll = new KHyperLogLogAnalyser(spark, k = k)
+
+  def getNetflixRatings: DataFrame = {
+    khll.getTable("netflix", "ratings", "customerId", Seq("rating"))
+  }
 
   val tableName = "netflix.ratings"
 
-  test("test that getting table works") {
-    assert(!table.isEmpty)
+  "hashIDCol" should "alter id in dataframe" in {
+    val hashed = khll.hashIDCol(getNetflixRatings)
+    assert(getNetflixRatings("field") != hashed("field"))
+    assert(getNetflixRatings("id") == hashed("id"))
   }
 
-  test("test hashIDCol hashes correctly") {
-    val hashed = khll.hashIDCol(table)
-    assert(table("field") != hashed("field"))
-    assert(table("id") == hashed("id"))
+  "hashFieldCol" should "alter value in dataframe" in {
+    val hashed = khll.hashFieldCol(getNetflixRatings)
+    assert(getNetflixRatings("field") != hashed("field"))
+    assert(hashed.count() === k)
+  }
+
+  "khll" should "generates correctly" in {
+    val fieldHashes = khll.hashFieldCol(getNetflixRatings)
+    val idHashes = khll.hashIDCol(getNetflixRatings)
+
+    val khllTable = khll.khll(fieldHashes, idHashes)
+    println(khllTable.first())
   }
 }

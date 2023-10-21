@@ -4,7 +4,7 @@ import org.mitchelllisle.kanonymity.generalisation.{CustomLevel, DateGeneralisat
 class DateGeneralisationTest extends SparkFunSuite {
   import spark.implicits._
 
-  test("DateGeneralization for YearOnly") {
+  "YearOnly" should "be generalised on a date column" in {
     val data = Seq("2023-08-12", "2023-02-10", "2024-11-20").toDF("Date")
     val strategy = DateGeneralisation("Date", YearOnly)
 
@@ -14,7 +14,7 @@ class DateGeneralisationTest extends SparkFunSuite {
     assert(results sameElements Array("2023", "2023", "2024"))
   }
 
-  test("DateGeneralization for MonthYear") {
+  "MonthlyOnly" should "be generalised on a date column" in {
     val data = Seq("2023-08-12", "2023-02-10", "2024-11-20").toDF("Date")
     val strategy = DateGeneralisation("Date", MonthYear)
 
@@ -24,7 +24,7 @@ class DateGeneralisationTest extends SparkFunSuite {
     assert(results sameElements Array("2023-08", "2023-02", "2024-11"))
   }
 
-  test("DateGeneralization for QuarterYear") {
+  "QuarterYear" should "be generalised on a date column" in {
     val data = Seq("2023-08-12", "2023-02-10", "2024-11-20").toDF("Date")
     val strategy = DateGeneralisation("Date", QuarterYear)
 
@@ -34,7 +34,7 @@ class DateGeneralisationTest extends SparkFunSuite {
     assert(results sameElements Array("3-2023", "1-2023", "4-2024"))
   }
 
-  test("DateGeneralization for CustomLevel") {
+  "CustomLevel" should "be generalised on a date column" in {
     val data = Seq("2023-08-12", "2023-02-10", "2024-11-20").toDF("Date")
     val customFormat = "d-MMM-yyyy"
     val strategy = DateGeneralisation("Date", CustomLevel(customFormat))

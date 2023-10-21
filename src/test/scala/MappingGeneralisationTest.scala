@@ -4,7 +4,7 @@ import scala.collection.immutable.Seq
 class MappingGeneralisationTest extends SparkFunSuite {
   import spark.implicits._
 
-  test("MappingGeneralisation correctly maps values based on provided mapping") {
+  "MappingGeneralisation" should "correctly map values based on provided mapping" in {
     val data = Seq("A", "B", "C", "D", "E").toDF("Letters")
 
     val mapping = Map("A" -> "X", "B" -> "Y", "C" -> "Z")

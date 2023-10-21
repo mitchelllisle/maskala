@@ -4,7 +4,7 @@ class LDiversityTest extends SparkFunSuite {
 
   import spark.implicits._
 
-  test("Data meets l-diversity requirements") {
+  "Data" should "meet l-diversity requirements" in {
     val lDiv = new LDiversity(l = 2)
 
     val data = Seq(
@@ -17,7 +17,7 @@ class LDiversityTest extends SparkFunSuite {
     assert(lDiv.evaluate(data, "SensitiveAttribute"))
   }
 
-  test("Data does not meet l-diversity requirements") {
+  "Data" should "not meet l-diversity requirements" in {
     val lDiv = new LDiversity(l = 2)
 
     val data = Seq(
@@ -30,7 +30,7 @@ class LDiversityTest extends SparkFunSuite {
     assert(!lDiv.evaluate(data, "SensitiveAttribute"))
   }
 
-  test("l-diversity for multiple quasi-identifiers") {
+  "l-diversity"  should "match for multiple quasi-identifiers" in {
     val lDiv = new LDiversity(l = 2)
 
     val data = Seq(
@@ -45,7 +45,7 @@ class LDiversityTest extends SparkFunSuite {
     assert(!lDiv.evaluate(data, "SensitiveAttribute"))
   }
 
-  test("l-diversity with larger l requirement") {
+  "l-diversity with larger l requirement" should "not be met" in {
     val lDiv = new LDiversity(l = 4)
 
     val data = Seq(

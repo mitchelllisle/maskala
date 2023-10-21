@@ -1,13 +1,12 @@
-import org.scalatest.funsuite.AnyFunSuite
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
-import org.scalactic.source.Position
-import org.scalatest.BeforeAndAfter
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.reflect.io.Directory
 import java.io.File
 
 
-trait SparkFunSuite extends AnyFunSuite {
+class SparkFunSuite extends AnyFlatSpec with BeforeAndAfterAll {
   val spark: SparkSession = SparkSession.builder()
     .appName("MaskalaTests")
     .master("local[*]")
@@ -16,11 +15,20 @@ trait SparkFunSuite extends AnyFunSuite {
   val netflixSchema = "netflix"
   val netflixRatingsTable = "ratings"
 
-  val sampleNetflixData: DataFrame = spark
-    .read
-    .option("header", "true")
-    .csv("src/test/resources/netflix-sample.csv")
+  protected override def beforeAll(): Unit = {
+    val sampleNetflixData: DataFrame = spark
+      .read
+      .option("header", "true")
+      .csv("src/test/resources/netflix-sample.csv")
 
-  spark.sql(s"CREATE DATABASE IF NOT EXISTS $netflixSchema")
-  sampleNetflixData.write.mode(SaveMode.Ignore).saveAsTable(s"$netflixSchema.$netflixRatingsTable")
+    spark.sql(s"CREATE DATABASE IF NOT EXISTS $netflixSchema")
+    sampleNetflixData.write.mode(SaveMode.Overwrite).saveAsTable(s"$netflixSchema.$netflixRatingsTable")
+    super.beforeAll()
+  }
+
+  protected override def afterAll(): Unit = {
+    super.afterAll()
+    val dir = new Directory(new File("/spark-warehouse"))
+    dir.deleteRecursively()
+  }
 }
