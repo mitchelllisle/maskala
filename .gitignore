@@ -17,7 +17,7 @@
 /test/files/lib/*.jar
 /test/files/speclib/instrumented.jar
 /tools/*.jar
-
+metastore_db
 # Developer specific properties
 /build.properties
 /buildcharacter.properties
