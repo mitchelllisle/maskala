@@ -12,7 +12,7 @@ lazy val root = (project in file("."))
 
   )
 
-val sparkVersion = "3.5.0"
+val sparkVersion = "3.3.2"
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.2.15" % Test,
