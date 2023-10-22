@@ -7,9 +7,12 @@ import java.io.File
 
 
 class SparkFunSuite extends AnyFlatSpec with BeforeAndAfterAll {
-  val spark: SparkSession = SparkSession.builder()
+  val spark: SparkSession = SparkSession
+    .builder
     .appName("MaskalaTests")
+    .config("spark.sql.warehouse.dir", "spark-warehouse")
     .master("local[*]")
+    .enableHiveSupport()
     .getOrCreate()
 
   val netflixSchema = "netflix"

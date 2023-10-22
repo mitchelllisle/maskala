@@ -1,6 +1,6 @@
 package org.mitchelllisle.khyperloglog
 
-import org.apache.spark.sql.expressions.WindowSpec
+import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.types.StringType
 import org.apache.spark.sql.{Column, DataFrame, SparkSession, functions => F}
 
@@ -45,7 +45,11 @@ class UniquenessAnalyser(spark: SparkSession) {
     val totalValues = numValues(data)
 
     val distribution = uniquenessDistribution(unique, totalValues)
-    distribution.select(uniquenessCol)
-  }
 
+    val windowSpec = Window.orderBy("uniqueness").rowsBetween(Window.unboundedPreceding, Window.currentRow)
+
+    distribution
+      .withColumn("cumulative_value_count", F.sum("valueCount").over(windowSpec))
+      .withColumn("cumulative_value_ratio", F.sum("valueRatio").over(windowSpec))
+  }
 }

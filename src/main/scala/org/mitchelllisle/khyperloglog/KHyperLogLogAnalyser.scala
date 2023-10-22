@@ -1,10 +1,8 @@
 package org.mitchelllisle.khyperloglog
 
 import org.apache.spark.sql.{DataFrame, SparkSession, functions => F}
-import org.apache.datasketches.hll.HllSketch
 import com.swoop.alchemy.spark.expressions.hll.functions.hll_init
 
-case class KHLL(id: String, hllSketch: HllSketch)
 case class KLLRow(id: String, field: String)
 
 class KHyperLogLogAnalyser(spark: SparkSession, k: Int) extends UniquenessAnalyser(spark) {

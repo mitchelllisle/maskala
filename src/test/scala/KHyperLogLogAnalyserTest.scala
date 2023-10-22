@@ -1,7 +1,8 @@
 import org.apache.spark.sql.DataFrame
 import org.mitchelllisle.khyperloglog.KHyperLogLogAnalyser
+import org.scalatest.BeforeAndAfterAll
 
-class KHyperLogLogAnalyserTest extends SparkFunSuite {
+class KHyperLogLogAnalyserTest extends SparkFunSuite with BeforeAndAfterAll {
   val k = 2056
   val khll = new KHyperLogLogAnalyser(spark, k = k)
 
@@ -13,8 +14,8 @@ class KHyperLogLogAnalyserTest extends SparkFunSuite {
 
   "hashIDCol" should "alter id in dataframe" in {
     val hashed = khll.hashIDCol(getNetflixRatings)
-    assert(getNetflixRatings("field") != hashed("field"))
-    assert(getNetflixRatings("id") == hashed("id"))
+    assert(getNetflixRatings.select("field").except(hashed.select("field")).count() > 0)
+    assert(getNetflixRatings.select("id").except(hashed.select("id")).count() == 0)
   }
 
   "hashFieldCol" should "alter value in dataframe" in {
