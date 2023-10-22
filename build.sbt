@@ -22,5 +22,4 @@ libraryDependencies ++= Seq(
   "com.swoop" %% "spark-alchemy" % "1.2.1"
 )
 
-dependencyOverrides += "org.scala-lang.modules" %% "scala-xml" % "1.2.0"
-
+dependencyOverrides += "org.scala-lang.modules" %% "scala-xml" % "2.1.0"
