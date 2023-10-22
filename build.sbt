@@ -19,6 +19,6 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-sql" % sparkVersion,
   "org.apache.spark" %% "spark-core" % sparkVersion,
   "org.apache.spark" %% "spark-hive" % sparkVersion,
-  "org.scala-lang.modules" %% "scala-xml" % "1.2.0",
+  "org.scala-lang.modules" %% "scala-xml" % "2.1.0",
   "com.swoop" %% "spark-alchemy" % "1.2.1"
 )
