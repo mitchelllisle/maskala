@@ -17,6 +17,8 @@ class SparkFunSuite extends AnyFlatSpec with BeforeAndAfterAll {
   val netflixRatingsTable = "ratings"
 
   protected override def beforeAll(): Unit = {
+    removeDataDir()
+
     val sampleNetflixData: DataFrame = spark
       .read
       .option("header", "true")
@@ -27,8 +29,7 @@ class SparkFunSuite extends AnyFlatSpec with BeforeAndAfterAll {
     super.beforeAll()
   }
 
-  protected override def afterAll(): Unit = {
-    super.afterAll()
+  def removeDataDir(): Unit = {
     val dir = new Directory(new File("spark-warehouse"))
     dir.deleteRecursively()
   }
