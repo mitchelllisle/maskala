@@ -33,4 +33,9 @@ class SparkFunSuite extends AnyFlatSpec with BeforeAndAfterAll {
     val dir = new Directory(new File("spark-warehouse"))
     dir.deleteRecursively()
   }
+
+  protected override def afterAll(): Unit = {
+    removeDataDir()
+    super.afterAll()
+  }
 }
