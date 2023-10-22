@@ -90,7 +90,7 @@ class UniquenessAnalyserTest extends SparkFunSuite with BeforeAndAfterAll {
     assert(hashed.count() === k)
   }
 
-  "khll" should "generates correctly" in {
+  "khll" should "generate correctly" in {
     val fieldHashes = khll.hashFieldCol(getNetflixRatings)
     val idHashes = khll.hashIDCol(getNetflixRatings)
 
