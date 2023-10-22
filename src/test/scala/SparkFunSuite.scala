@@ -1,10 +1,10 @@
-import org.scalatest.funsuite.AnyFunSuite
 import org.apache.spark.sql.SparkSession
+import org.scalatest.flatspec.AnyFlatSpec
 
 
-
-trait SparkFunSuite extends AnyFunSuite {
-  val spark: SparkSession = SparkSession.builder()
+class SparkFunSuite extends AnyFlatSpec {
+  val spark: SparkSession = SparkSession
+    .builder
     .appName("MaskalaTests")
     .master("local[*]")
     .getOrCreate()

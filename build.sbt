@@ -1,4 +1,4 @@
-ThisBuild / version := "0.5.1-SNAPSHOT"
+ThisBuild / version := "0.6.0-SNAPSHOT"
 
 ThisBuild / scalaVersion := "2.12.18"
 
@@ -12,9 +12,14 @@ lazy val root = (project in file("."))
 
   )
 
+val sparkVersion = "3.3.2"
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.2.15" % Test,
-  "org.apache.spark" %% "spark-sql" % "3.3.2" % "provided",
-  "org.apache.spark" %% "spark-core" % "3.3.2" % "provided"
+  "org.apache.spark" %% "spark-sql" % sparkVersion % "provided",
+  "org.apache.spark" %% "spark-core" % sparkVersion % "provided",
+  "org.apache.spark" %% "spark-hive" % sparkVersion % "provided",
+  "com.swoop" %% "spark-alchemy" % "1.2.1"
 )
+
+dependencyOverrides += "org.scala-lang.modules" %% "scala-xml" % "2.1.0"

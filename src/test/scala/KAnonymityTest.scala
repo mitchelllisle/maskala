@@ -1,10 +1,12 @@
 import org.mitchelllisle.kanonymity.KAnonymity
+import org.scalatest.BeforeAndAfterAll
+
 import scala.collection.immutable.Seq
 
 class KAnonymityTest extends SparkFunSuite {
   import spark.implicits._
 
-  test("isKAnonymous returns true for k-anonymous data") {
+  "isKAnonymous" should "return true for k-anonymous data" in {
     val data = Seq(
       ("1234", "Male"),
       ("1234", "Male"),
@@ -16,7 +18,7 @@ class KAnonymityTest extends SparkFunSuite {
     assert(kAnon.evaluate(data))
   }
 
-  test("isKAnonymous returns false for non k-anonymous data") {
+  "isKAnonymous" should "return false for non k-anonymous data" in {
 
     val data = Seq(
       ("1234", "Male"),
@@ -31,7 +33,7 @@ class KAnonymityTest extends SparkFunSuite {
     assert(!kAnon.evaluate(df))
   }
 
-  test("filterKAnonymous filters out rows not meeting the k-anonymity threshold") {
+  "filterKAnonymous" should "filter out rows not meeting the k-anonymity threshold" in {
     val data = Seq(
       ("1234", "Male"),
       ("1234", "Male"),
@@ -49,7 +51,7 @@ class KAnonymityTest extends SparkFunSuite {
     assert(result.except(expected).count() == 0 && expected.except(result).count() == 0)
   }
 
-  test("filterKAnonymous retains all rows when they all meet the k-anonymity threshold") {
+  "filterKAnonymous" should "retain all rows when they all meet the k-anonymity threshold" in {
     val data = Seq(
       ("1234", "Male"),
       ("1234", "Male"),
@@ -63,7 +65,7 @@ class KAnonymityTest extends SparkFunSuite {
     assert(result.except(data).count() == 0 && data.except(result).count() == 0)
   }
 
-  test("filterKAnonymous handles ignoring specified columns") {
+  "filterKAnonymous" should "handles ignoring specified columns" in {
     val data = Seq(
       ("1234", "Male", "user1"),
       ("1234", "Male", "user2"),

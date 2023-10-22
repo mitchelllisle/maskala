@@ -17,7 +17,7 @@
 /test/files/lib/*.jar
 /test/files/speclib/instrumented.jar
 /tools/*.jar
-
+metastore_db
 # Developer specific properties
 /build.properties
 /buildcharacter.properties
@@ -56,7 +56,7 @@
 /build-sbt/
 local.sbt
 jitwatch.out
-
+spark-warehouse
 # Used by the restarr/restarrFull commands as target directories
 /build-restarr/
 /target-restarr/
