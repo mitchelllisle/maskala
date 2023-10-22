@@ -1,7 +1,9 @@
 import org.mitchelllisle.kanonymity.generalisation.MappingGeneralisation
+import org.scalatest.BeforeAndAfterAll
+
 import scala.collection.immutable.Seq
 
-class MappingGeneralisationTest extends SparkFunSuite {
+class MappingGeneralisationTest extends SparkFunSuite with BeforeAndAfterAll {
   import spark.implicits._
 
   "MappingGeneralisation" should "correctly map values based on provided mapping" in {

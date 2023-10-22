@@ -1,6 +1,7 @@
 import org.mitchelllisle.ldiversity.LDiversity
+import org.scalatest.BeforeAndAfterAll
 
-class LDiversityTest extends SparkFunSuite {
+class LDiversityTest extends SparkFunSuite with BeforeAndAfterAll {
 
   import spark.implicits._
 

@@ -1,8 +1,9 @@
 import org.mitchelllisle.khyperloglog.UniquenessAnalyser
 import org.apache.spark.sql.DataFrame
+import org.scalatest.BeforeAndAfterAll
 
 
-class UniquenessAnalyserTest extends SparkFunSuite {
+class UniquenessAnalyserTest extends SparkFunSuite with BeforeAndAfterAll {
   val k = 2056
   val analyser = new UniquenessAnalyser(spark)
   val tableName = "netflix.ratings"

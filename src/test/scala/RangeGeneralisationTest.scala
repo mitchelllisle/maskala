@@ -1,8 +1,10 @@
 import org.mitchelllisle.kanonymity.KAnonymity
 import org.mitchelllisle.kanonymity.generalisation.{MappingGeneralisation, RangeGeneralisation}
+import org.scalatest.BeforeAndAfterAll
+
 import scala.collection.immutable.Seq
 
-class RangeGeneralisationTest extends SparkFunSuite {
+class RangeGeneralisationTest extends SparkFunSuite with BeforeAndAfterAll {
   import spark.implicits._
 
   "RangeGeneralization" should  "correctly generalize numeric column values" in {
