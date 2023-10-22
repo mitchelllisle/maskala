@@ -2,7 +2,7 @@ import org.mitchelllisle.kanonymity.generalisation.{CustomLevel, DateGeneralisat
 import org.scalatest.BeforeAndAfterAll
 
 
-class DateGeneralisationTest extends SparkFunSuite with BeforeAndAfterAll {
+class DateGeneralisationTest extends SparkFunSuite {
   import spark.implicits._
 
   "YearOnly" should "be generalised on a date column" in {

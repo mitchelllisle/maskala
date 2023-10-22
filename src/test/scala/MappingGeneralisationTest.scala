@@ -3,7 +3,7 @@ import org.scalatest.BeforeAndAfterAll
 
 import scala.collection.immutable.Seq
 
-class MappingGeneralisationTest extends SparkFunSuite with BeforeAndAfterAll {
+class MappingGeneralisationTest extends SparkFunSuite {
   import spark.implicits._
 
   "MappingGeneralisation" should "correctly map values based on provided mapping" in {

@@ -4,7 +4,7 @@ import org.scalatest.BeforeAndAfterAll
 
 import scala.collection.immutable.Seq
 
-class RangeGeneralisationTest extends SparkFunSuite with BeforeAndAfterAll {
+class RangeGeneralisationTest extends SparkFunSuite {
   import spark.implicits._
 
   "RangeGeneralization" should  "correctly generalize numeric column values" in {

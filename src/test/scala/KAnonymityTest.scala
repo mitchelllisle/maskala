@@ -3,7 +3,7 @@ import org.scalatest.BeforeAndAfterAll
 
 import scala.collection.immutable.Seq
 
-class KAnonymityTest extends SparkFunSuite with BeforeAndAfterAll {
+class KAnonymityTest extends SparkFunSuite {
   import spark.implicits._
 
   "isKAnonymous" should "return true for k-anonymous data" in {
