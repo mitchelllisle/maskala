@@ -1,10 +1,10 @@
-package org.mitchelllisle.khyperloglog
+package org.mitchelllisle.reidentifiability
 
+import com.google.common.annotations.Beta
 import org.apache.spark.sql.{DataFrame, SparkSession, functions => F}
 import com.swoop.alchemy.spark.expressions.hll.functions.hll_init
 
-case class KLLRow(id: String, field: String)
-
+@Beta
 class KHyperLogLogAnalyser(spark: SparkSession, k: Int) extends UniquenessAnalyser(spark) {
 
   def hashFieldCol(data: DataFrame): DataFrame = {
@@ -24,5 +24,4 @@ class KHyperLogLogAnalyser(spark: SparkSession, k: Int) extends UniquenessAnalys
       .join(idHashes, fieldHashes("field") === idHashes("field"))
       .withColumn("hll", hll_init(idCol))
   }
-
 }

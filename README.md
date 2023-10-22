@@ -1,17 +1,35 @@
 [![codecov](https://codecov.io/gh/mitchelllisle/maskala/graph/badge.svg?token=LCZ99996YR)](https://codecov.io/gh/mitchelllisle/maskala)
 
-# Maskala 
+# Maskala
+
+#### Features
+
+- Compute the K-Anonymity of a given dataset and work with the data to achieve K-Anonymity
+- Assess Uniqueness for a table to determine the risk of re-identifiability
+
+## Getting Started
 
 ### KAnonymity
 
 This library provides utility functions to assess and ensure K-Anonymity on datasets using Apache Spark.
 
-#### Features
+### Uniqueness Analyzer
+The `UniquenessAnalyser` class in `org.mitchelllisle.reidentifiability` package provides methods to analyze the 
+uniqueness of values within a DataFrame using Spark. Uniqueness is a proxy for re-identifiability, an important privacy 
+engineering concept. This class helps evaluate re-identifiability risk metrics using data uniqueness as an indicator.
 
-- Compute the K-Anonymity of a given dataset.
-- Filter rows in a dataset to ensure K-Anonymity.
+```scala
+import org.mitchelllisle.reidentifiability.UniquenessAnalyser
+import org.apache.spark.sql.SparkSession
 
-## Getting Started
+val spark = SparkSession.builder.master("local").appName("Uniqueness Analyser Example").getOrCreate()
+val analyser = new UniquenessAnalyser(spark)
+
+val data = spark.read.option("header", "true").csv("src/test/resources/netflix-sample.csv")
+val table = analyser.getTable("netflix", "ratings", "customerId", Seq("rating"))
+
+val result = analyser.run(table)
+```
 
 ### Dependencies
 

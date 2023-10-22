@@ -1,4 +1,4 @@
-import org.mitchelllisle.khyperloglog.{KHyperLogLogAnalyser, UniquenessAnalyser}
+import org.mitchelllisle.reidentifiability.{KHyperLogLogAnalyser, UniquenessAnalyser}
 import org.apache.spark.sql.{AnalysisException, DataFrame}
 import org.scalatest.BeforeAndAfterAll
 
