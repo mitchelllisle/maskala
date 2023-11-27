@@ -74,7 +74,7 @@ class UniquenessAnalyserTest extends SparkFunSuite with BeforeAndAfterAll {
   }
 
   "Running pipeline" should "produce uniqueness results" in {
-    val uniqueness = analyser.run(getNetflixRatings)
+    val uniqueness = analyser.apply(getNetflixRatings)
     println("")
   }
 

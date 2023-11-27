@@ -28,7 +28,7 @@ val analyser = new UniquenessAnalyser(spark)
 val data = spark.read.option("header", "true").csv("src/test/resources/netflix-sample.csv")
 val table = analyser.getTable("netflix", "ratings", "customerId", Seq("rating"))
 
-val result = analyser.run(table)
+val result = analyser.apply(table)
 ```
 
 ### Dependencies

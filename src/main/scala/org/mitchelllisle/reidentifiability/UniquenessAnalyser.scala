@@ -93,7 +93,7 @@ class UniquenessAnalyser(spark: SparkSession) {
    * @param data the input DataFrame
    * @return DataFrame containing the cumulative value count and ratio
    */
-  def run(data: DataFrame): DataFrame = {
+  def apply(data: DataFrame): DataFrame = {
     val unique = uniquenessData(data)
     val totalValues = numValues(data)
 
