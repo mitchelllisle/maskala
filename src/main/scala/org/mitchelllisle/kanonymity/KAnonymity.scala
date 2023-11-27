@@ -72,7 +72,7 @@ class KAnonymity(k: Int) {
    * @return `true` if the dataframe satisfies K-Anonymity,
    *         `false` if not,
    */
-  def evaluate(data: DataFrame, ignoreColumns: Seq[String] = Seq.empty): Boolean = {
+  def apply(data: DataFrame, ignoreColumns: Seq[String] = Seq.empty): Boolean = {
     val countsDf = getRowFrequencyCounts(data, ignoreColumns)
     val minCount = countsDf
       .agg(F.min("count").as("min"))

@@ -75,7 +75,7 @@ class UniquenessAnalyserTest extends SparkFunSuite with BeforeAndAfterAll {
       (2905, 1, 0.2, 5, 1.0),
       (1243, 1, 0.2, 2, 0.4)
     ).toDF()
-    val uniqueness = analyser.run(getNetflixRatings)
+    val uniqueness = analyser(getNetflixRatings)
     assert(uniqueness.except(expected).count() == 0)
   }
 
