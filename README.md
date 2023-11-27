@@ -13,6 +13,23 @@
 
 This library provides utility functions to assess and ensure K-Anonymity on datasets using Apache Spark.
 
+```scala
+import org.mitchelllisle.kanonymity.KAnonymity
+import org.mitchelllisle.kanonymity.generalisation.GeneralisationStrategy
+
+val kAnonymity = new KAnonymity(k = 5)
+
+val anonymizedData = kAnonymity.filter(data)
+val isAnonymized = kAnonymity.evaluate(data)
+
+val strategies = Seq(
+  DateGeneralisation("dateColumn", QuarterYear),
+  RangeGeneralisation("numberColumn", 10)
+)
+val generalisedData = kAnonymity.generalise(data, strategies)
+```
+
+
 ### Uniqueness Analyzer
 The `UniquenessAnalyser` class in `org.mitchelllisle.reidentifiability` package provides methods to analyze the 
 uniqueness of values within a DataFrame using Spark. Uniqueness is a proxy for re-identifiability, an important privacy 

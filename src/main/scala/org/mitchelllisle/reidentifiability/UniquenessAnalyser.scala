@@ -57,17 +57,6 @@ class UniquenessAnalyser(spark: SparkSession) {
   }
 
   /**
-   * Gets the total number of values (rows) in a DataFrame. Not really that necessary as a method but saves writing this
-   * twice if we need it in another place.
-   *
-   * @param data the input DataFrame
-   * @return the count of values
-   */
-  def numValues(data: DataFrame): Long = {
-    data.count()
-  }
-
-  /**
    * Generates a uniqueness distribution for a DataFrame.
    * Groups by uniqueness, calculates value count and value ratio, and orders by uniqueness.
    *
@@ -95,9 +84,8 @@ class UniquenessAnalyser(spark: SparkSession) {
    */
   def apply(data: DataFrame): DataFrame = {
     val unique = uniquenessData(data)
-    val totalValues = numValues(data)
 
-    val distribution = uniquenessDistribution(unique, totalValues)
+    val distribution = uniquenessDistribution(unique, unique.count())
 
     val windowSpec = Window.orderBy("uniqueness").rowsBetween(Window.unboundedPreceding, Window.currentRow)
 

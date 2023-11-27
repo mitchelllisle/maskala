@@ -16,8 +16,6 @@ class UniquenessAnalyserTest extends SparkFunSuite with BeforeAndAfterAll {
   val netflixRatingsTable = "ratings"
 
   protected override def beforeAll(): Unit = {
-    dropDatabase()
-
     val sampleNetflixData: DataFrame = spark
       .read
       .option("header", "true")
@@ -59,23 +57,26 @@ class UniquenessAnalyserTest extends SparkFunSuite with BeforeAndAfterAll {
     assert(unique.except(expected).count() == 0)
   }
 
-  "Counting" should "equal number of non-null records" in {
-    assert(analyser.numValues(getNetflixRatings) == 9992)
-  }
-
   "Distribution" should "match expected values" in {
     val expected = Seq((2427, 1, 0.2), (2175, 1, 0.2), (1108, 1, 0.2), (2905, 1, 0.2), (1243, 1, 0.2)).toDF()
 
     val unique = analyser.uniquenessData(getNetflixRatings)
-    val numValues = analyser.numValues(unique)
-    val distribution = analyser.uniquenessDistribution(unique, numValues)
+
+    val distribution = analyser.uniquenessDistribution(unique, unique.count())
 
     assert(distribution.except(expected).count() == 0)
   }
 
   "Running pipeline" should "produce uniqueness results" in {
-    val uniqueness = analyser.apply(getNetflixRatings)
-    println("")
+    val expected = Seq(
+      (2427, 1, 0.2, 4 ,0.8),
+      (2175, 1, 0.2, 3, 0.6000000000000001),
+      (1108, 1, 0.2, 1, 0.2),
+      (2905, 1, 0.2, 5, 1.0),
+      (1243, 1, 0.2, 2, 0.4)
+    ).toDF()
+    val uniqueness = analyser.run(getNetflixRatings)
+    assert(uniqueness.except(expected).count() == 0)
   }
 
   "hashIDCol" should "alter id in dataframe" in {
