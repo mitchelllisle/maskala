@@ -28,18 +28,16 @@ class UniquenessAnalyser(spark: SparkSession) {
    * simple contract for any data we bring into this class is by concatenating the specified columns, casting them to
    * StringType, and renaming the field to "field" with an associated "id".
    *
-   * @param schema     the schema name of the table
-   * @param table      the table name
+   * @param data     the data to calculate uniqueness on
    * @param primaryKey the primary key column name
    * @param columns    the column names to be concatenated
    * @return DataFrame containing the concatenated columns
    */
-  def getTable(schema: String, table: String, primaryKey: String, columns: Seq[String]): DataFrame = {
+  def hashData(data: DataFrame, primaryKey: String, columns: Seq[String]): DataFrame = {
     val value = F.concat(columns.map(F.col): _*).cast(StringType)
     val id = F.col(primaryKey).cast(StringType)
 
-    spark.read
-      .table(s"$schema.$table")
+    data
       .select(value, id)
       .toDF("field", "id")
       .na.drop() // we can't hash a null value

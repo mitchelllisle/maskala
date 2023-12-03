@@ -1,50 +1,22 @@
 import org.mitchelllisle.reidentifiability.{KHyperLogLogAnalyser, UniquenessAnalyser}
-import org.apache.spark.sql.{AnalysisException, DataFrame}
-import org.scalatest.BeforeAndAfterAll
-
-import scala.util.Try
+import org.apache.spark.sql.DataFrame
 
 
-class UniquenessAnalyserTest extends SparkFunSuite with BeforeAndAfterAll {
+class UniquenessAnalyserTest extends SparkFunSuite {
   val k = 2056
-  val khll = new KHyperLogLogAnalyser(spark, k = k)
+  val khll = new KHyperLogLogAnalyser(spark)
   val analyser = new UniquenessAnalyser(spark)
 
   import spark.implicits._
 
-  val netflixSchema = "netflix"
-  val netflixRatingsTable = "ratings"
+  val sampleNetflixData: DataFrame = spark
+    .read
+    .option("header", "true")
+    .csv("src/test/resources/netflix-sample.csv")
 
-  protected override def beforeAll(): Unit = {
-    val sampleNetflixData: DataFrame = spark
-      .read
-      .option("header", "true")
-      .csv("src/test/resources/netflix-sample.csv")
-
-    // Spark is inconsistent in when it's cleaning up resources; this is here to ignore errors when trying to create
-    // a database that already exists
-    Try {
-      spark.sql(s"CREATE DATABASE IF NOT EXISTS $netflixSchema")
-      sampleNetflixData.write.saveAsTable(s"$netflixSchema.$netflixRatingsTable")
-    } recover {
-      case err: AnalysisException if err.message.contains("LOCATION_ALREADY_EXISTS") =>
-        println(s"$netflixSchema.$netflixRatingsTable already exists. continuing")
-    }
-
-    super.beforeAll()
-  }
-
-  def dropDatabase(): Unit = {
-    spark.sql(s"DROP SCHEMA IF EXISTS $netflixSchema CASCADE")
-  }
-
-  protected override def afterAll(): Unit = {
-    dropDatabase()
-    super.afterAll()
-  }
 
   def getNetflixRatings: DataFrame = {
-    analyser.getTable("netflix", "ratings", "customerId", Seq("rating"))
+    analyser.hashData(sampleNetflixData, "customerId", Seq("rating"))
   }
 
   "Getting table" should "return a non empty dataframe" in {
@@ -79,23 +51,27 @@ class UniquenessAnalyserTest extends SparkFunSuite with BeforeAndAfterAll {
     assert(uniqueness.except(expected).count() == 0)
   }
 
-  "hashIDCol" should "alter id in dataframe" in {
-    val hashed = khll.hashIDCol(getNetflixRatings)
-    assert(getNetflixRatings.select("field").except(hashed.select("field")).count() > 0)
-    assert(getNetflixRatings.select("id").except(hashed.select("id")).count() == 0)
+  "getTable" should "prepare the data with hash values" in {
+    val prepared = khll.hashData(sampleNetflixData, Seq("rating"))
+
+    assert(prepared.columns.contains("field"))
+
+    assert(prepared.count() > 0L)
+    assert(prepared.except(sampleNetflixData).count() > 0L)
   }
 
-  "hashFieldCol" should "alter value in dataframe" in {
-    val hashed = khll.hashFieldCol(getNetflixRatings)
-    assert(getNetflixRatings("field") != hashed("field"))
-    assert(hashed.count() === k)
+  "khllCardinality" should "estimate cardinality with limited hash values" in {
+    val prepared = khll.hashData(sampleNetflixData, Seq("field", "id"))
+    val khllEstimate = khll.khllCardinality(prepared, k)
+
+    assert(khllEstimate.columns.contains("approx_count_distinct(hash)"))
+    assert(khllEstimate.count() == 1)
   }
 
-  "khll" should "generate correctly" in {
-    val fieldHashes = khll.hashFieldCol(getNetflixRatings)
-    val idHashes = khll.hashIDCol(getNetflixRatings)
+  "apply" should "execute the complete KHLL analysis workflow" in {
+    val result = khll.apply(sampleNetflixData, Seq("field", "id"), k)
 
-    val khllTable = khll.khll(fieldHashes, idHashes)
-    println(khllTable.first())
+    assert(result.columns.contains("approx_count_distinct(hash)"))
+    assert(result.count() == 1)
   }
 }
