@@ -1,6 +1,7 @@
 package org.mitchelllisle.reidentifiability
 
-import org.apache.spark.sql.{DataFrame, SparkSession, functions => F, Column}
+import org.apache.spark.sql.{DataFrame, SparkSession, functions => F}
+
 
 /**
  * A class to analyze the cardinality of values within a DataFrame using the KHLL algorithm and Spark.
@@ -22,10 +23,11 @@ class KHyperLogLogAnalyser(spark: SparkSession) {
 
   def createKHHLTable(data: DataFrame, k: Int = 2048): DataFrame = {
     val kHashes = data
-      .withColumn("h", F.hash(valueCol))
-      .groupBy("h")
-      .agg(F.min(F.col("h")).as("h"))
+      .withColumn("valueHash", F.hash(valueCol))
+      .groupBy("valueHash")
+      .agg(F.min(F.col("valueHash")).alias("h"))
       .orderBy("h")
+      .select("h")
       .limit(k)
 
     val idsWithHash = data
@@ -34,9 +36,25 @@ class KHyperLogLogAnalyser(spark: SparkSession) {
 
     kHashes
       .join(idsWithHash, kHashes("h") === idsWithHash("h"), "left")
-      .groupBy("h")
+      .groupBy(kHashes("h"))
       .agg(F.approx_count_distinct(idCol).as("hll"))
-      .orderBy("h")
+      .orderBy(kHashes("h"))
   }
 
+  def estimateNumValues(data: DataFrame, k: Int = 2048): DataFrame = {
+    val numHashes = data.count()
+
+    data
+      .select(
+        F.when(F.lit(numHashes) < F.lit(k), F.lit(numHashes))
+          .otherwise((F.lit(k - 1) * (F.pow(F.lit(2), F.lit(64)) / (F.max("h") + F.lit(1) + F.pow(F.lit(2), F.lit(63))))).cast("bigint"))
+          .alias("estimatedNumValues")
+      )
+  }
+
+  def apply(data: DataFrame, k: Int = 2048, columns: Seq[String], primaryKey: String): Unit = {
+    val source = createSourceTable(data, columns, primaryKey)
+    val khll = createKHHLTable(data, k)
+
+  }
 }
