@@ -4,6 +4,8 @@
 SBT=sbt
 
 clean:
+	rm -rf spark-warehouse
+	rm -rf .bsp
 	$(SBT) clean
 
 test:
