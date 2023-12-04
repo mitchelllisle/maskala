@@ -11,14 +11,6 @@ class KHLLAnalyserTest extends SparkFunSuite {
     assert(prepared.count() == 9999)
   }
 
-  "createKHHLTable" should "prepare the data with hash values" in {
-    val prepared = khll.createSourceTable(sampleNetflixData, Seq("date", "rating"), "customerId")
-    val table = khll.createKHLLTable(prepared)
-
-    assert(prepared.columns.sameElements(Array("value", "id")))
-    assert(prepared.count() == 9999)
-  }
-
   "generating end to end" should "return the right cardinality" in {
     val table = khll(sampleNetflixData, Seq("date", "rating"), "customerId", k)
 
