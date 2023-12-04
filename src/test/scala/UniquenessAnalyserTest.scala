@@ -1,50 +1,14 @@
-import org.mitchelllisle.reidentifiability.{KHyperLogLogAnalyser, UniquenessAnalyser}
-import org.apache.spark.sql.{AnalysisException, DataFrame}
-import org.scalatest.BeforeAndAfterAll
-
-import scala.util.Try
+import org.mitchelllisle.reidentifiability.UniquenessAnalyser
+import org.apache.spark.sql.DataFrame
 
 
-class UniquenessAnalyserTest extends SparkFunSuite with BeforeAndAfterAll {
-  val k = 2056
-  val khll = new KHyperLogLogAnalyser(spark, k = k)
-  val analyser = new UniquenessAnalyser(spark)
-
+class UniquenessAnalyserTest extends SparkFunSuite {
   import spark.implicits._
 
-  val netflixSchema = "netflix"
-  val netflixRatingsTable = "ratings"
-
-  protected override def beforeAll(): Unit = {
-    val sampleNetflixData: DataFrame = spark
-      .read
-      .option("header", "true")
-      .csv("src/test/resources/netflix-sample.csv")
-
-    // Spark is inconsistent in when it's cleaning up resources; this is here to ignore errors when trying to create
-    // a database that already exists
-    Try {
-      spark.sql(s"CREATE DATABASE IF NOT EXISTS $netflixSchema")
-      sampleNetflixData.write.saveAsTable(s"$netflixSchema.$netflixRatingsTable")
-    } recover {
-      case err: AnalysisException if err.message.contains("LOCATION_ALREADY_EXISTS") =>
-        println(s"$netflixSchema.$netflixRatingsTable already exists. continuing")
-    }
-
-    super.beforeAll()
-  }
-
-  def dropDatabase(): Unit = {
-    spark.sql(s"DROP SCHEMA IF EXISTS $netflixSchema CASCADE")
-  }
-
-  protected override def afterAll(): Unit = {
-    dropDatabase()
-    super.afterAll()
-  }
+  val analyser = new UniquenessAnalyser(spark)
 
   def getNetflixRatings: DataFrame = {
-    analyser.getTable("netflix", "ratings", "customerId", Seq("rating"))
+    analyser.hashData(sampleNetflixData, "customerId", Seq("rating"))
   }
 
   "Getting table" should "return a non empty dataframe" in {
@@ -77,25 +41,5 @@ class UniquenessAnalyserTest extends SparkFunSuite with BeforeAndAfterAll {
     ).toDF()
     val uniqueness = analyser(getNetflixRatings)
     assert(uniqueness.except(expected).count() == 0)
-  }
-
-  "hashIDCol" should "alter id in dataframe" in {
-    val hashed = khll.hashIDCol(getNetflixRatings)
-    assert(getNetflixRatings.select("field").except(hashed.select("field")).count() > 0)
-    assert(getNetflixRatings.select("id").except(hashed.select("id")).count() == 0)
-  }
-
-  "hashFieldCol" should "alter value in dataframe" in {
-    val hashed = khll.hashFieldCol(getNetflixRatings)
-    assert(getNetflixRatings("field") != hashed("field"))
-    assert(hashed.count() === k)
-  }
-
-  "khll" should "generate correctly" in {
-    val fieldHashes = khll.hashFieldCol(getNetflixRatings)
-    val idHashes = khll.hashIDCol(getNetflixRatings)
-
-    val khllTable = khll.khll(fieldHashes, idHashes)
-    println(khllTable.first())
   }
 }
