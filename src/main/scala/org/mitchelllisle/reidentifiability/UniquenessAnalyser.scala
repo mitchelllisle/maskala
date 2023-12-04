@@ -17,8 +17,8 @@ import org.apache.spark.sql.{Column, DataFrame, SparkSession, functions => F}
  */
 class UniquenessAnalyser(spark: SparkSession) {
 
-  val fieldCol: Column = F.col("field")
-  val idCol: Column = F.col("id")
+  private val fieldCol: Column = F.col("field")
+  private val idCol: Column = F.col("id")
 
   private val uniquenessCol: Column = F.col("uniqueness")
 
