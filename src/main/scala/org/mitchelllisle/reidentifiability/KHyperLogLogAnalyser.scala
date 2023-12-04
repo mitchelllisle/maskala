@@ -1,7 +1,6 @@
 package org.mitchelllisle.reidentifiability
 
 import org.apache.spark.sql.{DataFrame, SparkSession, functions => F, Column}
-import org.apache.spark.sql.types.StringType
 
 /**
  * A class to analyze the cardinality of values within a DataFrame using the KHLL algorithm and Spark.
@@ -11,56 +10,33 @@ import org.apache.spark.sql.types.StringType
  */
 class KHyperLogLogAnalyser(spark: SparkSession) {
 
-  val fieldCol: Column = F.col("field")
-  val hashCol: Column = F.col("hash")
+  private val valueCol = F.col("value")
+  private val idCol = F.col("id")
 
-  /**
-   * Reads data from a specified table and returns it as a DataFrame.
-   * The data is prepared by hashing the specified columns and casting them to StringType.
-   *
-   * @param data     the data to hash
-   * @param columns    the column names to be hashed
-   * @return DataFrame containing the hashed columns
-   */
-  def hashData(data: DataFrame, columns: Seq[String]): DataFrame = {
-    val hashedValue = F.hash(columns.map(F.col): _*).cast(StringType)
-
-    data
-      .select(hashedValue)
-      .toDF("field")
-      .na.drop() // we can't use a null value in KHLL
+  def createSourceTable(data: DataFrame, columns: Seq[String], primaryKey: String): DataFrame = {
+    data.select(
+      F.to_json(F.struct(columns.map(F.col): _*)).alias("value"),
+      F.to_json(F.struct(F.col(primaryKey))).alias("id")
+    )
   }
 
-  /**
-   * Applies the KHLL algorithm to estimate the cardinality of the dataset.
-   * This method selects the k lowest hashes and aggregates them to estimate uniqueness.
-   *
-   * @param data the input DataFrame
-   * @param k    the number of minimum hashes to consider (hyperparameter of KHLL)
-   * @return DataFrame containing the KHLL cardinality estimate
-   */
-  def khllCardinality(data: DataFrame, k: Int): DataFrame = {
-    // Using Spark's approx_count_distinct to estimate cardinality
-    val khllEstimate = data
-      .withColumn("hash", F.hash(fieldCol))
-      .orderBy("hash")
+  def createKHHLTable(data: DataFrame, k: Int = 2048): DataFrame = {
+    val kHashes = data
+      .withColumn("h", F.hash(valueCol))
+      .groupBy("h")
+      .agg(F.min(F.col("h")).as("h"))
+      .orderBy("h")
       .limit(k)
-      .select(F.approx_count_distinct("hash"))
 
-    khllEstimate
+    val idsWithHash = data
+      .withColumn("h", F.hash(valueCol))
+      .select("h", "id")
+
+    kHashes
+      .join(idsWithHash, kHashes("h") === idsWithHash("h"), "left")
+      .groupBy("h")
+      .agg(F.approx_count_distinct(idCol).as("hll"))
+      .orderBy("h")
   }
 
-  /**
-   * Executes the KHLL analysis workflow.
-   * Reads the data, applies KHLL algorithm, and returns cardinality estimates.
-   *
-   * @param data   the data to compute KHLL
-   * @param columns  the column names to be hashed
-   * @param k        the number of minimum hashes to consider
-   * @return DataFrame containing the cardinality estimates
-   */
-  def apply(data: DataFrame, columns: Seq[String], k: Int): DataFrame = {
-    val hashed = hashData(data, columns)
-    khllCardinality(hashed, k)
-  }
 }

@@ -1,19 +1,11 @@
-import org.mitchelllisle.reidentifiability.{KHyperLogLogAnalyser, UniquenessAnalyser}
+import org.mitchelllisle.reidentifiability.UniquenessAnalyser
 import org.apache.spark.sql.DataFrame
 
 
 class UniquenessAnalyserTest extends SparkFunSuite {
-  val k = 2056
-  val khll = new KHyperLogLogAnalyser(spark)
-  val analyser = new UniquenessAnalyser(spark)
-
   import spark.implicits._
 
-  val sampleNetflixData: DataFrame = spark
-    .read
-    .option("header", "true")
-    .csv("src/test/resources/netflix-sample.csv")
-
+  val analyser = new UniquenessAnalyser(spark)
 
   def getNetflixRatings: DataFrame = {
     analyser.hashData(sampleNetflixData, "customerId", Seq("rating"))
@@ -49,29 +41,5 @@ class UniquenessAnalyserTest extends SparkFunSuite {
     ).toDF()
     val uniqueness = analyser(getNetflixRatings)
     assert(uniqueness.except(expected).count() == 0)
-  }
-
-  "getTable" should "prepare the data with hash values" in {
-    val prepared = khll.hashData(sampleNetflixData, Seq("rating"))
-
-    assert(prepared.columns.contains("field"))
-
-    assert(prepared.count() > 0L)
-    assert(prepared.except(sampleNetflixData).count() > 0L)
-  }
-
-  "khllCardinality" should "estimate cardinality with limited hash values" in {
-    val prepared = khll.hashData(sampleNetflixData, Seq("field", "id"))
-    val khllEstimate = khll.khllCardinality(prepared, k)
-
-    assert(khllEstimate.columns.contains("approx_count_distinct(hash)"))
-    assert(khllEstimate.count() == 1)
-  }
-
-  "apply" should "execute the complete KHLL analysis workflow" in {
-    val result = khll.apply(sampleNetflixData, Seq("field", "id"), k)
-
-    assert(result.columns.contains("approx_count_distinct(hash)"))
-    assert(result.count() == 1)
   }
 }
