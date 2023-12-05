@@ -1,16 +1,15 @@
 package org.mitchelllisle.reidentifiability
 
-import org.apache.spark.sql.{DataFrame, SparkSession, functions => F}
+import org.apache.spark.sql.{DataFrame, functions => F}
 import org.apache.spark.sql.expressions.Window
 
 /**
- * KHyperLogLogAnalyser is a class to analyze the cardinality of values within a DataFrame using the KHLL algorithm and Spark.
- * This class is inspired by and adapted from the original concept by Google. You can find the implementation in SQL
- * here https://github.com/google/khll-paper-experiments
+ * KHyperLogLogAnalyser is a class to analyze the cardinality of values within a DataFrame using the KHLL algorithm and
+ * Spark. This class is inspired by and adapted from the original concept by Google. You can find the implementation in
+ * SQL here https://github.com/google/khll-paper-experiments
  *
- * @param spark the active SparkSession
  */
-class KHyperLogLogAnalyser(spark: SparkSession) {
+object KHyperLogLogAnalyser {
 
   private val valueCol = F.col("value")
   private val idCol = F.col("id")
@@ -144,21 +143,15 @@ class KHyperLogLogAnalyser(spark: SparkSession) {
   def apply(dataFrame: DataFrame, groupByColumns: Seq[String], userIdColumn: String, k: Int = 2048): DataFrame = {
     // Step 1: Create Source Table
     val sourceTable = createSourceTable(dataFrame, groupByColumns, userIdColumn)
-
     // Step 2: Apply KHLL to Source Table
     val khllTable = createKHLLTable(sourceTable, k)
-
     val numHashes = khllTable.count()
-
     // Step 4: Estimate Number of Values
     val estimatedNumValues = estimateNumValues(khllTable, numHashes, k).cache()
-
     // Step 5: Calculate Value Sampling Ratio
     val valueSamplingRatio = calculateValueSamplingRatio(estimatedNumValues, k)
-
     // Step 6: Estimate Uniqueness Distribution
     val estimatedUniquenessDistribution = calculateEstimatedUniquenessDistribution(khllTable, valueSamplingRatio, numHashes)
-
     // Step 7: Calculate Cumulative Distribution
     calculateCumulativeDistribution(estimatedUniquenessDistribution)
   }
