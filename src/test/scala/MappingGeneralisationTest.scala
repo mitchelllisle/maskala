@@ -1,5 +1,9 @@
+<<<<<<< Updated upstream
 import org.mitchelllisle.kanonymity.generalisation.MappingGeneralisation
 import org.scalatest.BeforeAndAfterAll
+=======
+import org.mitchelllisle.generaliser.MappingGeneralisation
+>>>>>>> Stashed changes
 
 import scala.collection.immutable.Seq
 

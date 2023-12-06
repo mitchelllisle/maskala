@@ -1,5 +1,4 @@
 import org.mitchelllisle.reidentifiability.UniquenessAnalyser
-import org.apache.spark.sql.DataFrame
 
 
 class UniquenessAnalyserTest extends SparkFunSuite {

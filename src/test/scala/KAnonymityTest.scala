@@ -1,5 +1,4 @@
 import org.mitchelllisle.kanonymity.KAnonymity
-import org.scalatest.BeforeAndAfterAll
 
 import scala.collection.immutable.Seq
 
