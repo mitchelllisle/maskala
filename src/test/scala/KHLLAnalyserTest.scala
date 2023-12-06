@@ -21,6 +21,6 @@ class KHLLAnalyserTest extends SparkFunSuite {
           Array("hll", "estimatedValueCount", "estimatedValueRatio", "cumulativeValueCount", "cumulativeValueRatio")
         )
     )
-    assert(table.count() == 21)
+    assert(table.count() == 23)
   }
 }
