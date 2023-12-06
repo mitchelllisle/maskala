@@ -2,7 +2,6 @@ import org.mitchelllisle.reidentifiability.UniquenessAnalyser
 import org.apache.spark.sql.DataFrame
 
 class UniquenessAnalyserTest extends SparkFunSuite {
-  import spark.implicits._
 
   val analyser: UniquenessAnalyser.type = UniquenessAnalyser
 
