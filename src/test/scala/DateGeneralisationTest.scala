@@ -1,9 +1,4 @@
-<<<<<<< Updated upstream
-import org.mitchelllisle.kanonymity.generalisation.{CustomLevel, DateGeneralisation, MonthYear, QuarterYear, YearOnly}
-import org.scalatest.BeforeAndAfterAll
-=======
 import org.mitchelllisle.generaliser.{CustomLevel, DateGeneralisation, MonthYear, QuarterYear, YearOnly}
->>>>>>> Stashed changes
 
 
 class DateGeneralisationTest extends SparkFunSuite {

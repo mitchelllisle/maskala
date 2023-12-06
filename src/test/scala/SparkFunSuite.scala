@@ -12,5 +12,5 @@ class SparkFunSuite extends AnyFlatSpec {
   val sampleNetflixData: DataFrame = spark
     .read
     .option("header", "true")
-    .csv("src/test/resources/netflix-sample.csv")
+    .csv("src/test/resources/netflix.csv")
 }
