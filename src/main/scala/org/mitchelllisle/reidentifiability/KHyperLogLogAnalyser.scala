@@ -21,7 +21,7 @@ object KHyperLogLogAnalyser {
    * @param k    The number of minimum hashes to consider, default is 2048.
    * @return DataFrame with a single column "estimatedNumValues" containing the estimated number of unique values.
    */
-  def estimateNumValues(data: DataFrame, numHashes: Long, k: Int = 2048): DataFrame = {
+  private def estimateNumValues(data: DataFrame, numHashes: Long, k: Int = 2048): DataFrame = {
     val distinctLargerThanKLogic = (
       F.lit(k - 1) *
         (
@@ -53,7 +53,7 @@ object KHyperLogLogAnalyser {
    */
   def createSourceTable(data: DataFrame, columns: Seq[String], primaryKey: String): DataFrame = {
     data.select(
-      F.to_json(F.struct(columns.map(F.col): _*)).alias("value"),
+      F.sha2(F.to_json(F.struct(columns.map(F.col): _*)), 256).alias("value"),
       F.to_json(F.struct(F.col(primaryKey))).alias("id")
     )
   }
@@ -65,7 +65,7 @@ object KHyperLogLogAnalyser {
    * @param k    The number of minimum hashes to consider, default is 2048.
    * @return KHLL DataFrame with hash values and HyperLogLog estimates.
    */
-  def createKHLLTable(data: DataFrame, k: Int = 2048): DataFrame = {
+  private def createKHLLTable(data: DataFrame, k: Int = 2048): DataFrame = {
     val kHashes = data
       .withColumn("valueHash", F.hash(valueCol))
       .groupBy("valueHash")
@@ -92,7 +92,7 @@ object KHyperLogLogAnalyser {
    * @param k    The number of minimum hashes, default is 2048.
    * @return DataFrame with a single column "valueSamplingRatio" representing the sampling ratio.
    */
-  def calculateValueSamplingRatio(data: DataFrame, k: Int = 2048): DataFrame = {
+  private def calculateValueSamplingRatio(data: DataFrame, k: Int = 2048): DataFrame = {
     data.select(
       F.least(F.lit(1.0), F.lit(k) / F.col("estimatedNumValues")).alias("valueSamplingRatio")
     )
@@ -105,7 +105,7 @@ object KHyperLogLogAnalyser {
    * @param valueSamplingRatioTable The DataFrame containing the value sampling ratio.
    * @return DataFrame with the distribution of estimated value counts and ratios for each level of uniqueness.
    */
-  def calculateEstimatedUniquenessDistribution(khllTable: DataFrame, valueSamplingRatioTable: DataFrame, numHashes: Long): DataFrame = {
+  private def calculateEstimatedUniquenessDistribution(khllTable: DataFrame, valueSamplingRatioTable: DataFrame, numHashes: Long): DataFrame = {
     val valueSamplingRatio = valueSamplingRatioTable.collect()(0).getAs[Double]("valueSamplingRatio")
 
     khllTable
