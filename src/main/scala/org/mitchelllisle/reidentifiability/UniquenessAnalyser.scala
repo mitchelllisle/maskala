@@ -14,31 +14,9 @@ import org.apache.spark.sql.{Column, DataFrame, functions => F}
  */
 object UniquenessAnalyser {
 
-  private val fieldCol: Column = F.col("field")
+  private val idCol: Column = F.col("id")
   private val valueCol: Column = F.col("value")
-
   private val uniquenessCol: Column = F.col("uniqueness")
-
-  /**
-   * Orchestrates the process of calculating the uniqueness distribution in a dataset.
-   *
-   * @param data           The input DataFrame for analysis.
-   * @param groupByColumns Columns to be grouped by in the source table.
-   * @param userIdColumn   The column representing the user ID.
-   * @return The final DataFrame representing the cumulative distribution of uniqueness.
-   */
-  def apply(data: DataFrame, groupByColumns: Seq[String], userIdColumn: String): DataFrame = {
-    // Step 1: Create Source Table
-    val sourceTable = createSourceTable(data, groupByColumns, userIdColumn)
-    // Step 2: Calculate Uniqueness Data
-    val uniquenessData = calculateUniquenessData(sourceTable)
-    // Step 3: Count Number of Values
-    val numValues = countNumValues(uniquenessData)
-    // Step 4: Calculate Uniqueness Distribution
-    val uniquenessDistribution = calculateUniquenessDistribution(uniquenessData, numValues)
-    // Step 5: Calculate Cumulative Distribution
-    calculateCumulativeDistribution(uniquenessDistribution)
-  }
 
   /**
    * Calculates the uniqueness of each value in the source table.
@@ -48,7 +26,7 @@ object UniquenessAnalyser {
    */
   def createSourceTable(data: DataFrame, groupByColumns: Seq[String], userIdColumn: String): DataFrame = {
     data.select(
-      F.to_json(F.struct(groupByColumns.map(F.col): _*)).alias("value"),
+      F.sha2(F.to_json(F.struct(groupByColumns.map(F.col): _*)), 256).alias("value"),
       F.to_json(F.struct(userIdColumn)).alias("id")
     )
   }
@@ -60,7 +38,7 @@ object UniquenessAnalyser {
    * @return A DataFrame with each value and its corresponding count of unique user IDs.
    */
   def calculateUniquenessData(sourceTable: DataFrame): DataFrame = {
-    sourceTable.groupBy(valueCol).agg(F.countDistinct(fieldCol).alias("uniqueness"))
+    sourceTable.groupBy(valueCol).agg(F.countDistinct(idCol).alias("uniqueness"))
   }
 
   /**
@@ -101,5 +79,26 @@ object UniquenessAnalyser {
     uniquenessDistribution
       .withColumn("cumulativeValueCount", F.sum("value_count").over(windowSpec))
       .withColumn("cumulativeValueRatio", F.sum("value_ratio").over(windowSpec))
+  }
+
+  /**
+   * Orchestrates the process of calculating the uniqueness distribution in a dataset.
+   *
+   * @param data           The input DataFrame for analysis.
+   * @param groupByColumns Columns to be grouped by in the source table.
+   * @param userIdColumn   The column representing the user ID.
+   * @return The final DataFrame representing the cumulative distribution of uniqueness.
+   */
+  def apply(data: DataFrame, groupByColumns: Seq[String], userIdColumn: String): DataFrame = {
+    // Step 1: Create Source Table
+    val sourceTable = createSourceTable(data, groupByColumns, userIdColumn)
+    // Step 2: Calculate Uniqueness Data
+    val uniquenessData = calculateUniquenessData(sourceTable)
+    // Step 3: Count Number of Values
+    val numValues = countNumValues(uniquenessData)
+    // Step 4: Calculate Uniqueness Distribution
+    val uniquenessDistribution = calculateUniquenessDistribution(uniquenessData, numValues)
+    // Step 5: Calculate Cumulative Distribution
+    calculateCumulativeDistribution(uniquenessDistribution)
   }
 }

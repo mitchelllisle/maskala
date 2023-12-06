@@ -2,7 +2,7 @@ import org.mitchelllisle.reidentifiability.KHyperLogLogAnalyser
 
 class KHLLAnalyserTest extends SparkFunSuite {
   val k = 2056
-  val khll = new KHyperLogLogAnalyser(spark)
+  val khll: KHyperLogLogAnalyser.type = KHyperLogLogAnalyser
 
   "createSourceTable" should "prepare the data with hash values" in {
     val prepared = khll.createSourceTable(sampleNetflixData, Seq("date", "rating"), "customerId")
