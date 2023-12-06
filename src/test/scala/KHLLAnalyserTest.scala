@@ -2,17 +2,17 @@ import org.mitchelllisle.reidentifiability.KHyperLogLogAnalyser
 
 class KHLLAnalyserTest extends SparkFunSuite {
   val k = 2056
-  val khll = new KHyperLogLogAnalyser(spark)
+  val khll: KHyperLogLogAnalyser.type = KHyperLogLogAnalyser
 
   "createSourceTable" should "prepare the data with hash values" in {
-    val prepared = khll.createSourceTable(sampleNetflixData, Seq("date", "rating"), "customerId")
+    val prepared = khll.createSourceTable(sampleNetflixData, Seq("date", "rating", "movie"), "user_id")
 
     assert(prepared.columns.sameElements(Array("value", "id")))
-    assert(prepared.count() == 9999)
+    assert(prepared.count() == 9992)
   }
 
   "generating end to end" should "return the right cardinality" in {
-    val table = khll(sampleNetflixData, Seq("date", "rating"), "customerId", k)
+    val table = khll(sampleNetflixData, Seq("date", "rating"), "user_id", k)
 
     assert(
       table
