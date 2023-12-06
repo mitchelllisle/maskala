@@ -24,7 +24,7 @@ object UniquenessAnalyser {
    * @param data The DataFrame created from createSourceTable method.
    * @return A DataFrame with each value and its corresponding count of unique user IDs.
    */
-  def createSourceTable(data: DataFrame, groupByColumns: Seq[String], userIdColumn: String): DataFrame = {
+  private def createSourceTable(data: DataFrame, groupByColumns: Seq[String], userIdColumn: String): DataFrame = {
     data.select(
       F.sha2(F.to_json(F.struct(groupByColumns.map(F.col): _*)), 256).alias("value"),
       F.to_json(F.struct(userIdColumn)).alias("id")
@@ -37,7 +37,7 @@ object UniquenessAnalyser {
    * @param sourceTable The DataFrame created from createSourceTable method.
    * @return A DataFrame with each value and its corresponding count of unique user IDs.
    */
-  def calculateUniquenessData(sourceTable: DataFrame): DataFrame = {
+  private def calculateUniquenessData(sourceTable: DataFrame): DataFrame = {
     sourceTable.groupBy(valueCol).agg(F.countDistinct(idCol).alias("uniqueness"))
   }
 
@@ -47,7 +47,7 @@ object UniquenessAnalyser {
    * @param uniquenessData The DataFrame returned from the calculateUniquenessData method.
    * @return The total number of unique values as a Long.
    */
-  def countNumValues(uniquenessData: DataFrame): Long = {
+  private def countNumValues(uniquenessData: DataFrame): Long = {
     uniquenessData.select("value").distinct().count()
   }
 
@@ -58,7 +58,7 @@ object UniquenessAnalyser {
    * @param numValues      The total number of unique values, obtained from countNumValues.
    * @return A DataFrame with the distribution of values for each level of uniqueness.
    */
-  def calculateUniquenessDistribution(uniquenessData: DataFrame, numValues: Long): DataFrame = {
+  private def calculateUniquenessDistribution(uniquenessData: DataFrame, numValues: Long): DataFrame = {
     uniquenessData.groupBy(uniquenessCol)
       .agg(
         F.count(valueCol).alias("value_count"),
@@ -73,7 +73,7 @@ object UniquenessAnalyser {
    * @param uniquenessDistribution The DataFrame containing the uniqueness distribution.
    * @return A DataFrame with cumulative counts and ratios of the uniqueness distribution.
    */
-  def calculateCumulativeDistribution(uniquenessDistribution: DataFrame): DataFrame = {
+  private def calculateCumulativeDistribution(uniquenessDistribution: DataFrame): DataFrame = {
     val windowSpec = Window.orderBy("uniqueness").rowsBetween(Window.unboundedPreceding, Window.currentRow)
 
     uniquenessDistribution
