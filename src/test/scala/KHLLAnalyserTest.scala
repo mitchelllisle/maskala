@@ -5,7 +5,7 @@ class KHLLAnalyserTest extends SparkFunSuite {
   val khll: KHyperLogLogAnalyser.type = KHyperLogLogAnalyser
 
   "createSourceTable" should "prepare the data with hash values" in {
-    val prepared = khll.createSourceTable(sampleNetflixData, Seq("date", "rating", "movie), "user_id")
+    val prepared = khll.createSourceTable(sampleNetflixData, Seq("date", "rating", "movie"), "user_id")
 
     assert(prepared.columns.sameElements(Array("value", "id")))
     assert(prepared.count() == 9999)
