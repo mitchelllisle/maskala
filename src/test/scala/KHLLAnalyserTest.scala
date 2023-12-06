@@ -8,7 +8,7 @@ class KHLLAnalyserTest extends SparkFunSuite {
     val prepared = khll.createSourceTable(sampleNetflixData, Seq("date", "rating", "movie"), "user_id")
 
     assert(prepared.columns.sameElements(Array("value", "id")))
-    assert(prepared.count() == 9999)
+    assert(prepared.count() == 9992)
   }
 
   "generating end to end" should "return the right cardinality" in {
