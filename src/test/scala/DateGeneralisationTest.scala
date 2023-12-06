@@ -1,4 +1,4 @@
-import org.mitchelllisle.kanonymity.generalisation.{CustomLevel, DateGeneralisation, MonthYear, QuarterYear, YearOnly}
+import org.mitchelllisle.generaliser.{CustomLevel, DateGeneralisation, MonthYear, QuarterYear, YearOnly}
 import org.scalatest.BeforeAndAfterAll
 
 

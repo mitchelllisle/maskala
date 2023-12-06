@@ -15,7 +15,6 @@ This library provides utility functions to assess and ensure K-Anonymity on data
 
 ```scala
 import org.mitchelllisle.kanonymity.KAnonymity
-import org.mitchelllisle.kanonymity.generalisation.GeneralisationStrategy
 
 val kAnonymity = new KAnonymity(k = 5)
 

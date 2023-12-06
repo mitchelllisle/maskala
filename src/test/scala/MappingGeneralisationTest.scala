@@ -1,4 +1,4 @@
-import org.mitchelllisle.kanonymity.generalisation.MappingGeneralisation
+import org.mitchelllisle.generaliser.MappingGeneralisation
 import org.scalatest.BeforeAndAfterAll
 
 import scala.collection.immutable.Seq

@@ -1,5 +1,5 @@
+import org.mitchelllisle.generaliser.{MappingGeneralisation, RangeGeneralisation}
 import org.mitchelllisle.kanonymity.KAnonymity
-import org.mitchelllisle.kanonymity.generalisation.{MappingGeneralisation, RangeGeneralisation}
 import org.scalatest.BeforeAndAfterAll
 
 import scala.collection.immutable.Seq
