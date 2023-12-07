@@ -1,4 +1,4 @@
-import org.mitchelllisle.generaliser.{CustomLevel, DateGeneralisation, MonthYear, QuarterYear, YearOnly}
+import org.mitchelllisle.generalisation.{CustomLevel, DateGeneralisation, MonthYear, QuarterYear, YearOnly}
 
 
 class DateGeneralisationTest extends SparkFunSuite {

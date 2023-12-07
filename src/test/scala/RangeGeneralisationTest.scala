@@ -1,4 +1,4 @@
-import org.mitchelllisle.generaliser.{Generaliser, RangeGeneralisation}
+import org.mitchelllisle.generalisation.{Generaliser, RangeGeneralisation}
 
 import scala.collection.immutable.Seq
 
