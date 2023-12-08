@@ -1,7 +1,6 @@
 import org.mitchelllisle.redaction.{HashingStrategy, MaskingStrategy, Redactor}
 
 class RedactorTest extends SparkFunSuite {
-
   "Giving multiple strategies" should "apply the right transformations" in {
     val mask = "{REDACTED}"
     val strategies = Seq(
