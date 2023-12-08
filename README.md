@@ -47,6 +47,26 @@ val table = analyser.getTable("netflix", "ratings", "customerId", Seq("rating"))
 val result = analyser.apply(table)
 ```
 
+### Data Redaction
+The Redactor class along with redaction strategies allows for flexible redaction of data in a DataFrame. You can apply 
+multiple redaction strategies including masking, hashing and more.
+
+```scala
+import org.mitchelllisle.redaction.{Redactor, MaskingStrategy, HashingStrategy, RemovalStrategy}
+import org.apache.spark.sql.SparkSession
+
+val spark = SparkSession.builder.master("local").appName("Data Redaction Example").getOrCreate()
+
+val redactor = new Redactor(Seq(
+  MaskingStrategy("movie", "*****"),
+  HashingStrategy("user_id"),
+))
+
+val data = spark.read.option("header", "true").csv("src/test/resources/netflix-sample.csv")
+val redactedData = redactor.apply(data)
+
+```
+
 ### Dependencies
 
 - Apache Spark 3.x

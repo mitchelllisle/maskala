@@ -1,7 +1,7 @@
 package org.mitchelllisle.kanonymity
 
 import org.apache.spark.sql.{DataFrame, functions => F}
-import org.mitchelllisle.generaliser.GeneralisationStrategy
+import org.mitchelllisle.generalisation.GeneralisationStrategy
 
 import java.security.MessageDigest
 

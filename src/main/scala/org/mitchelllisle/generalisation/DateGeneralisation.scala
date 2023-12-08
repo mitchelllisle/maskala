@@ -1,4 +1,4 @@
-package org.mitchelllisle.generaliser
+package org.mitchelllisle.generalisation
 
 import org.apache.spark.sql.{DataFrame, functions => F}
 
