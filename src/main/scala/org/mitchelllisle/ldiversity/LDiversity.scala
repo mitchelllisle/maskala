@@ -9,7 +9,6 @@ class LDiversity(l: Int, k: Int = 1) extends KAnonymity(k) {
    *
    * @param data            DataFrame containing the dataset.
    * @param sensitiveColumn The sensitive column that needs to have at least l diverse values.
-   * @param l               The minimum number of distinct sensitive values that a group should have.
    * @return A boolean indicating if the DataFrame meets l-diversity.
    */
   def apply(data: DataFrame, sensitiveColumn: String): Boolean = {

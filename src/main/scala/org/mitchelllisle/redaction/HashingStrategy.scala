@@ -30,7 +30,7 @@ case class HashingStrategy(column: String) extends RedactionStrategy {
    * @param pepper Optional pepper value to append to the column value.
    * @return A Column where each row's value is the concatenation of supplied salt, original value, and pepper.
    */
-  private def concatSaltAndPepper(value: Column, salt: String = "", pepper: String = ""): Column = {
+  private def concatSaltAndPepper(value: Column, salt: String, pepper: String): Column = {
     F.concat(F.lit(salt), value, F.lit(pepper))
   }
 
@@ -42,7 +42,7 @@ case class HashingStrategy(column: String) extends RedactionStrategy {
    * @return A new DataFrame with values in the specified column replaced by their securely hashed versions.
    */
   def apply(data: DataFrame): DataFrame = {
-    data.withColumn(column, hashColumn(concatSaltAndPepper(F.col(column))))
+    data.withColumn(column, hashColumn(F.col(column)))
   }
 
   /**

@@ -1,7 +1,5 @@
 import org.mitchelllisle.kanonymity.KAnonymity
 
-import scala.collection.immutable.Seq
-
 class KAnonymityTest extends SparkFunSuite {
   import spark.implicits._
 
@@ -14,7 +12,7 @@ class KAnonymityTest extends SparkFunSuite {
     ).toDF("ID", "Gender")
 
     val kAnon = new KAnonymity(2)
-    assert(kAnon.apply(data))
+    assert(kAnon.isKAnonymous(data))
   }
 
   "isKAnonymous" should "return false for non k-anonymous data" in {
@@ -29,7 +27,7 @@ class KAnonymityTest extends SparkFunSuite {
     val df = data.toDF("ID", "Gender")
 
     val kAnon = new KAnonymity(2)
-    assert(!kAnon.apply(df))
+    assert(!kAnon.isKAnonymous(df))
   }
 
   "filterKAnonymous" should "filter out rows not meeting the k-anonymity threshold" in {
@@ -41,7 +39,7 @@ class KAnonymityTest extends SparkFunSuite {
     ).toDF("ID", "Gender")
 
     val kAnon = new KAnonymity(2)
-    val result = kAnon.filter(data)
+    val result = kAnon.removeLessThanKRows(data)
     val expected = Seq(
       ("1234", "Male"),
       ("1234", "Male")
@@ -59,7 +57,7 @@ class KAnonymityTest extends SparkFunSuite {
     ).toDF("ID", "Gender")
 
     val kAnon = new KAnonymity(2)
-    val result = kAnon.filter(data)
+    val result = kAnon.removeLessThanKRows(data)
 
     assert(result.except(data).count() == 0 && data.except(result).count() == 0)
   }
@@ -73,7 +71,9 @@ class KAnonymityTest extends SparkFunSuite {
     ).toDF("Dept", "Gender", "UserID")
 
     val kAnon = new KAnonymity(2)
-    val result = kAnon.filter(data, Seq("UserID"))
+
+    val columns = data.columns.filterNot(_.equals("UserID"))
+    val result = kAnon.removeLessThanKRows(data, Some(columns))
 
     assert(result.except(data).count() == 0 && data.except(result).count() == 0)
   }

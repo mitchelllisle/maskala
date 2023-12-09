@@ -1,7 +1,6 @@
 package org.mitchelllisle.kanonymity
 
 import org.apache.spark.sql.{DataFrame, functions => F}
-import org.mitchelllisle.generalisation.GeneralisationStrategy
 
 import java.security.MessageDigest
 
@@ -24,38 +23,27 @@ class KAnonymity(k: Int) {
   /**
    * Adds a hash column to the dataframe by considering specific columns.
    *
-   * @param df      The dataframe to which the hash column will be added.
-   * @param columns The columns which will be used to generate the hash.
+   * @param data      The dataframe to which the hash column will be added.
+   * @param columns   The columns to consider for hashing. If None assume all columns in `data`
    * @return A new dataframe with an additional "row_hash" column.
    */
-  private def getHashedData(df: DataFrame, columns: Array[String]): DataFrame =
-    df.withColumn("row_hash", hashUdf(F.concat_ws("|", columns.map(df(_)): _*)))
-
-  /**
-   * Computes frequency counts of unique rows in the dataframe while considering specific columns.
-   *
-   * @param data          The dataframe whose rows' frequencies will be computed.
-   * @param ignoreColumns Columns to ignore while computing the row frequencies.
-   * @return A dataframe with a "row_hash" and a "count" column.
-   */
-  private def getRowFrequencyCounts(data: DataFrame, ignoreColumns: Seq[String] = Seq.empty): DataFrame = {
-    val columnsToConsider = data.columns.filterNot(ignoreColumns.contains)
-    getHashedData(data, columnsToConsider)
-      .groupBy(F.col("row_hash"))
-      .agg(F.count("*").as("count"))
+  private def getHashedData(data: DataFrame, columns: Option[Array[String]] = None): DataFrame = {
+    val hashCols: Array[String] = columns match {
+      case None => data.columns
+      case _ => columns.get
+    }
+    data.withColumn("row_hash", hashUdf(F.concat_ws("|", hashCols.map(data(_)): _*)))
   }
 
   /**
    * Filters the dataframe to only include rows whose frequencies meet a minimum threshold (k).
    *
    * @param data          The dataframe to be filtered.
-   * @param ignoreColumns Columns to ignore while determining row uniqueness.
    * @return A dataframe with rows that meet the minimum frequency threshold.
    */
-  def filter(data: DataFrame, ignoreColumns: Seq[String] = Seq.empty): DataFrame = {
-    val columnsToConsider = data.columns.filterNot(ignoreColumns.contains)
-    val countsDf = getRowFrequencyCounts(data, ignoreColumns)
-    val hashedData = getHashedData(data, columnsToConsider)
+  def removeLessThanKRows(data: DataFrame, columns: Option[Array[String]] = None): DataFrame = {
+    val countsDf = apply(data, columns)
+    val hashedData = getHashedData(data, columns)
 
     hashedData
       .join(countsDf, "row_hash")
@@ -63,21 +51,25 @@ class KAnonymity(k: Int) {
       .drop("count", "row_hash")
   }
 
+  def isKAnonymous(data: DataFrame, columns: Option[Array[String]] = None): Boolean = {
+    val kData = apply(data, columns)
+    val minCount = kData
+      .agg(F.min("count").as("min"))
+      .first()
+      .getAs[Long]("min")
+    minCount >= k
+  }
 
   /**
    * Determines if a dataframe satisfies the conditions of K-Anonymity.
    *
    * @param data          The dataframe to be checked for K-Anonymity.
-   * @param ignoreColumns Columns to ignore while determining row uniqueness.
    * @return `true` if the dataframe satisfies K-Anonymity,
    *         `false` if not,
    */
-  def apply(data: DataFrame, ignoreColumns: Seq[String] = Seq.empty): Boolean = {
-    val countsDf = getRowFrequencyCounts(data, ignoreColumns)
-    val minCount = countsDf
-      .agg(F.min("count").as("min"))
-      .first()
-      .getAs[Long]("min")
-    minCount >= k
+  def apply(data: DataFrame, columns: Option[Array[String]] = None): DataFrame = {
+    getHashedData(data, columns)
+      .groupBy(F.col("row_hash"))
+      .agg(F.count("*").as("count"))
   }
 }

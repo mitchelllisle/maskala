@@ -8,8 +8,6 @@ class HashingStrategyTest extends SparkFunSuite {
     data.select(column).rdd.map(row => row.getAs[String](column)).collect()
   }
 
-  import spark.implicits._
-
   "HashingStrategy" should "correctly hash values based on column name" in {
     val strategy = HashingStrategy("user_id")
 
