@@ -1,6 +1,7 @@
 import org.mitchelllisle.redaction.{HashingStrategy, MaskingStrategy, Redactor}
+import org.scalatest.flatspec.AnyFlatSpec
 
-class RedactorTest extends SparkFunSuite {
+class RedactorTest extends AnyFlatSpec with SparkFunSuite {
   "Giving multiple strategies" should "apply the right transformations" in {
     val mask = "{REDACTED}"
     val strategies = Seq(

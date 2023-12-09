@@ -1,7 +1,8 @@
 import org.mitchelllisle.generalisation.{CustomLevel, DateGeneralisation, MonthYear, QuarterYear, YearOnly}
+import org.scalatest.flatspec.AnyFlatSpec
 
 
-class DateGeneralisationTest extends SparkFunSuite {
+class DateGeneralisationTest extends AnyFlatSpec with SparkFunSuite {
   import spark.implicits._
 
   "YearOnly" should "be generalised on a date column" in {

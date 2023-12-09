@@ -1,14 +1,12 @@
 import org.mitchelllisle.redaction.HashingStrategy
-
 import org.apache.spark.sql.DataFrame
+import org.scalatest.flatspec.AnyFlatSpec
 
-class HashingStrategyTest extends SparkFunSuite {
+class HashingStrategyTest extends AnyFlatSpec with SparkFunSuite {
 
   def columnToSeq(data: DataFrame, column: String): Array[String] = {
     data.select(column).rdd.map(row => row.getAs[String](column)).collect()
   }
-
-  import spark.implicits._
 
   "HashingStrategy" should "correctly hash values based on column name" in {
     val strategy = HashingStrategy("user_id")

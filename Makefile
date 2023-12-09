@@ -1,13 +1,17 @@
-.PHONY: test clean
+.PHONY: test clean install-dev-local format
 
-# Path to your sbt (can be just `sbt` if it's globally available)
-SBT=sbt
+install-dev-local:
+	pip install --upgrade pip
+	pre-commit install
 
 clean:
 	rm -rf spark-warehouse
 	rm -rf .bsp
-	$(SBT) clean
+	sbt clean
+
+format:
+	sbt scalafmt
 
 test:
-	$(SBT) coverage test coverageReport
+	sbt coverage test coverageReport
 	@make clean

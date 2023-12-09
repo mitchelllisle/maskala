@@ -1,6 +1,7 @@
 import org.mitchelllisle.ldiversity.LDiversity
+import org.scalatest.flatspec.AnyFlatSpec
 
-class LDiversityTest extends SparkFunSuite {
+class LDiversityTest extends AnyFlatSpec with SparkFunSuite {
 
   import spark.implicits._
 
