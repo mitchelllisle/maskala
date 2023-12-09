@@ -14,6 +14,13 @@ class KAnonymityTest extends SparkFunSuite {
   val kAnon = new KAnonymity(2)
 
   "isKAnonymous" should "return true for k-anonymous data" in {
+    val data = Seq(
+      ("1234", "Male"),
+      ("1234", "Male"),
+      ("1236", "Female"),
+      ("1236", "Female")
+    ).toDF("ID", "Gender")
+
     assert(kAnon.isKAnonymous(data))
   }
 
@@ -41,6 +48,13 @@ class KAnonymityTest extends SparkFunSuite {
   }
 
   "filterKAnonymous" should "retain all rows when they all meet the k-anonymity threshold" in {
+    val data = Seq(
+      ("1234", "Male"),
+      ("1234", "Male"),
+      ("1235", "Male"),
+      ("1235", "Male")
+    ).toDF("ID", "Gender")
+
     val result = kAnon.removeLessThanKRows(data)
 
     assert(result.except(data).count() == 0 && data.except(result).count() == 0)

@@ -12,6 +12,7 @@
 #
 # JARs aren't checked in, they are fetched by sbt
 #
+.java-version
 /lib/*.jar
 /test/files/codelib/*.jar
 /test/files/lib/*.jar

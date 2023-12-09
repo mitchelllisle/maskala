@@ -8,7 +8,8 @@ class KAnonymity(k: Int) {
   private val hashUdf = F.udf[String, String](hashRow)
 
   private def hashRow(s: String): String =
-    MessageDigest.getInstance("SHA-256")
+    MessageDigest
+      .getInstance("SHA-256")
       .digest(s.getBytes("UTF-8"))
       .map("%02x".format(_))
       .mkString
