@@ -1,6 +1,7 @@
 import org.mitchelllisle.reidentifiability.KHyperLogLogAnalyser
+import org.scalatest.flatspec.AnyFlatSpec
 
-class KHLLAnalyserTest extends SparkFunSuite {
+class KHLLAnalyserTest extends AnyFlatSpec with SparkFunSuite {
   val k = 2056
   val khll: KHyperLogLogAnalyser.type = KHyperLogLogAnalyser
 

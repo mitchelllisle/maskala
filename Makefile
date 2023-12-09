@@ -1,9 +1,8 @@
-.PHONY: test clean
+.PHONY: test clean install-dev-local format
 
 install-dev-local:
 	pip install --upgrade pip
 	pre-commit install
-
 
 clean:
 	rm -rf spark-warehouse

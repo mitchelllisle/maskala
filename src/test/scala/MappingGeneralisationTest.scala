@@ -1,8 +1,8 @@
 import org.mitchelllisle.generalisation.MappingGeneralisation
+import org.scalatest.flatspec.AnyFlatSpec
 
-import scala.collection.immutable.Seq
 
-class MappingGeneralisationTest extends SparkFunSuite {
+class MappingGeneralisationTest extends AnyFlatSpec with SparkFunSuite {
   import spark.implicits._
 
   "MappingGeneralisation" should "correctly map values based on provided mapping" in {

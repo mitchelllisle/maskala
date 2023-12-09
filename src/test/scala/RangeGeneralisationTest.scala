@@ -1,8 +1,7 @@
 import org.mitchelllisle.generalisation.{Generaliser, RangeGeneralisation}
+import org.scalatest.flatspec.AnyFlatSpec
 
-import scala.collection.immutable.Seq
-
-class RangeGeneralisationTest extends SparkFunSuite {
+class RangeGeneralisationTest extends AnyFlatSpec with SparkFunSuite {
   import spark.implicits._
 
   "RangeGeneralization" should  "correctly generalize numeric column values" in {

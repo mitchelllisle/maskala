@@ -1,6 +1,7 @@
 import org.mitchelllisle.redaction.MaskingStrategy
+import org.scalatest.flatspec.AnyFlatSpec
 
-class MaskingStrategyTest extends SparkFunSuite {
+class MaskingStrategyTest extends AnyFlatSpec with SparkFunSuite {
   "MaskingStrategy with defaults" should "alter column" in {
     val strategy = MaskingStrategy("user_id")
 

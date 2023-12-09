@@ -15,10 +15,3 @@ repos:
         pass_filenames: false
         stages:
           - commit
-      - id: tests
-        name: run tests
-        entry: make test
-        language: system
-        pass_filenames: false
-        stages:
-          - commit
