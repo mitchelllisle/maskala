@@ -1,9 +1,23 @@
 import org.mitchelllisle.ldiversity.LDiversity
 import org.scalatest.flatspec.AnyFlatSpec
 
+import org.apache.spark.sql.{functions => F}
+
 class LDiversityTest extends AnyFlatSpec with SparkFunSuite {
 
   import spark.implicits._
+
+  "Running L-Diversity" should "correctly count groups" in {
+    val lDiv = new LDiversity(l = 3)
+    val output = lDiv(sampleNetflixData.drop("date"), "user_id")
+    assert(output.count() == 40)
+  }
+
+  "Removing rows" should "not include non LDiverse rows" in {
+    val lDiv = new LDiversity(l = 7)
+    val output = lDiv.removeLessThanLRows(sampleNetflixData.drop("date"), "user_id")
+    assert(output.filter(F.col("distinctCount") < 7).count() == 0)
+  }
 
   "Data" should "meet l-diversity requirements" in {
     val lDiv = new LDiversity(l = 2)
@@ -15,9 +29,7 @@ class LDiversityTest extends AnyFlatSpec with SparkFunSuite {
       ("B", "Other")
     ).toDF("QuasiIdentifier", "SensitiveAttribute")
 
-    assert(lDiv(data, "SensitiveAttribute").count() == 4)
-
-//    assert(lDiv(data, "SensitiveAttribute"))
+    assert(lDiv.isLDiverse(data, "SensitiveAttribute"))
   }
 
   "Data" should "not meet l-diversity requirements" in {
@@ -30,7 +42,7 @@ class LDiversityTest extends AnyFlatSpec with SparkFunSuite {
       ("B", "Other")
     ).toDF("QuasiIdentifier", "SensitiveAttribute")
 
-//    assert(!lDiv.apply(data, "SensitiveAttribute"))
+    assert(!lDiv.isLDiverse(data, "SensitiveAttribute"))
   }
 
   "l-diversity"  should "match for multiple quasi-identifiers" in {
@@ -45,7 +57,7 @@ class LDiversityTest extends AnyFlatSpec with SparkFunSuite {
       ("A", "Z", "Male")
     ).toDF("Quasi1", "Quasi2", "SensitiveAttribute")
 
-//    assert(!lDiv.apply(data, "SensitiveAttribute"))
+    assert(!lDiv.isLDiverse(data, "SensitiveAttribute"))
   }
 
   "l-diversity with larger l requirement" should "not be met" in {
@@ -61,7 +73,7 @@ class LDiversityTest extends AnyFlatSpec with SparkFunSuite {
       ("A", "Z", "Male")
     ).toDF("Quasi1", "Quasi2", "SensitiveAttribute")
 
-//    assert(!lDiv.apply(data, "SensitiveAttribute"))
+    assert(!lDiv.isLDiverse(data, "SensitiveAttribute"))
   }
 
 }

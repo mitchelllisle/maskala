@@ -16,6 +16,10 @@ import org.mitchelllisle.kanonymity.KAnonymity
   */
 class LDiversity(l: Int, k: Int = 1) extends KAnonymity(k) {
 
+  private def rowHash(groupColumns: Array[Column]): Column = {
+    F.sha2(F.concat(groupColumns: _*), 256)
+  }
+
   /** Group data by non-sensitive columns and count distinct sensitive values in each group.
     *
     * @param data
@@ -27,10 +31,12 @@ class LDiversity(l: Int, k: Int = 1) extends KAnonymity(k) {
     *   values.
     */
   def apply(data: DataFrame, sensitiveColumn: String): DataFrame = {
-    val groupColumns: Array[Column] = data.columns.filter(_ != sensitiveColumn).map(data(_))
+    val groupColumns: Array[Column] = data.columns.filter(_ != sensitiveColumn).map(F.col)
     data
-      .groupBy(groupColumns: _*)
+      .groupBy(groupColumns: _*) // We want the resulting DataFrame to have all groupBy columns in the result
       .agg(F.countDistinct(sensitiveColumn).as("distinctCount"))
+      .withColumn("row_hash", rowHash(groupColumns)) // this is just here for joining and identifying rows
+      .orderBy("distinctCount")
   }
 
   /** Checks if DataFrame satisfies the L-Diversity condition.
@@ -58,9 +64,7 @@ class LDiversity(l: Int, k: Int = 1) extends KAnonymity(k) {
     *   A DataFrame with rows that do not satisfy the l-diversity conditions removed.
     */
   def removeLessThanLRows(data: DataFrame, sensitiveColumn: String): DataFrame = {
-    val groupColumns = data.columns.filter(_ != sensitiveColumn)
     val distinctCountData = apply(data, sensitiveColumn)
-    val diverseGroups = distinctCountData.filter(F.col("distinctCount") >= l)
-    data.join(diverseGroups, groupColumns, "inner").drop("distinctCount")
+    distinctCountData.filter(F.col("distinctCount") >= l)
   }
 }
