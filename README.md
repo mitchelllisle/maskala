@@ -18,7 +18,7 @@ from re-identification.
 ## Features
 
 - Compute the `KAnonymity` of a given dataset and work with the data to achieve K-Anonymity
-- Compute the `LDiversity` of a given dataset and work with the data to achieve L-Diversity
+- Compute the `LDiversity` of a given dataset and work with the data to achieve ℓ-Diversity
 - A `Generaliser` capable of doing common transformations to data such as reducing date granularity, numerical bucketing etc
 - Assess the risk of re-identifiability of individuals in a dataset using the `UniquenessAnalyser`. For large datasets you
   can use a more efficient, probabilistic technique described in this Google paper [KHyperLogLog](https://research.google/pubs/pub47664/)
@@ -61,7 +61,7 @@ val evaluated = kAnon.isKAnonymous(data) // returns false
 ```
 
 #### 2. Filtering out rows that aren't KAnonymous
-If you want a dataset that only contains the rows that meet KAnonymity, you can use the 1
+If you want a dataset that only contains the rows that meet KAnonymity, you can use the `removeLessThanKRows` method
 
 ```scala
 import org.mitchelllisle.kanonymity.KAnonymity
@@ -90,18 +90,67 @@ val result = kAnon.removeLessThanKRows(data)
 > Note: Now if you run `isKAnonymous(result)` it will return `true` since we've removed the rows that don't satisfy K(2).
 
 
-###  L-Diversity
-L-Diversity is an extension of the K-Anonymity principle in data privacy, designed to enhance the protection against 
+###  ℓ-Diversity
+ℓ-Diversity is an extension of the K-Anonymity principle in data privacy, designed to enhance the protection against 
 certain types of attacks that K-Anonymity is susceptible to. While K-Anonymity ensures that each individual is 
-indistinguishable from at least k-1 others in the dataset, L-Diversity goes further by requiring that each group of 
+indistinguishable from at least k-1 others in the dataset, ℓ-Diversity goes further by requiring that each group of 
 indistinguishable individuals has at least 'l' distinct values for sensitive attributes. This concept addresses the 
 limitation of K-Anonymity in scenarios where sensitive attributes within a group can be homogeneous, thereby still 
-posing a risk of attribute disclosure. L-Diversity _ensures diversity in sensitive information_, reducing the likelihood 
+posing a risk of attribute disclosure. ℓ-Diversity _ensures diversity in sensitive information_, reducing the likelihood 
 that an individual's sensitive attributes can be accurately inferred within an anonymized dataset. It's particularly 
 useful in preventing attacks like homogeneity and background knowledge attacks, contributing to a more robust 
-privacy-preserving data publication. However, similar to K-Anonymity, L-Diversity is not a comprehensive solution. For
+privacy-preserving data publication. However, similar to K-Anonymity, ℓ-Diversity is not a comprehensive solution. For
 more information (including the limitations of l-diversity) 
 I recommend reading [ℓ-Diversity: Privacy Beyond k-Anonymity](https://personal.utdallas.edu/~muratk/courses/privacy08f_files/ldiversity.pdf)
+
+#### 1: Assessing ℓ-Diversity
+You can assess if your dataset satisfies ℓ-Diversity by using the `isLDiverse` method:
+
+```scala
+import org.mitchelllisle.ldiversity.LDiversity
+import org.apache.spark.sql.SparkSession
+
+val spark = SparkSession.builder().getOrCreate()
+
+import spark.implicits._
+
+val data = Seq(
+  ("A", "Male"),
+  ("A", "Male"),
+  ("B", "Female"),
+  ("B", "Other")
+).toDF("QuasiIdentifier", "SensitiveAttribute")
+
+val lDiv = new LDiversity(2)
+val evaluated = lDiv.isLDiverse(data) // returns false
+```
+
+#### 2. Filtering out rows that aren't ℓ-diverse
+If you want a dataset that only contains the rows that meet ℓ-Diversity, you can use the `removeLessThanLRows` method
+
+```scala
+import org.mitchelllisle.ldiversity.LDiversity
+import org.apache.spark.sql.SparkSession
+
+val spark = SparkSession.builder().getOrCreate()
+
+import spark.implicits._
+
+val data = Seq(
+  ("A", "Male"),
+  ("A", "Male"),
+  ("B", "Female"),
+  ("B", "Other")
+).toDF("QuasiIdentifier", "SensitiveAttribute")
+
+val kAnon = new LDiversity(2)
+
+val result = kAnon.removeLessThanKRows(data)
+/* result would only contain the first two rows above:
+("30", "Male"),
+("30", "Male"),
+* */
+```
 
 ### Uniqueness Analyzer
 The `UniquenessAnalyser` class in `org.mitchelllisle.reidentifiability` package provides methods to analyze the 
@@ -113,11 +162,10 @@ import org.mitchelllisle.reidentifiability.UniquenessAnalyser
 import org.apache.spark.sql.SparkSession
 
 val spark = SparkSession.builder.getOrCreate()
-val analyser = new UniquenessAnalyser(spark)
 
 val data = spark.read.option("header", "true").csv("src/test/resources/netflix-sample.csv")
 
-val result = analyser(table)
+val result = UniquenessAnalyser(table)
 ```
 
 ### Data Redaction
