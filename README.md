@@ -2,19 +2,44 @@
 
 # Maskala
 
+Maskala is a privacy engineering toolkit that works with Apache Spark. It aims to provide a number of features for
+analysing, masking, generalising and filtering data to help ensure the identity of individuals in a dataset are protected
+from re-identification.
+
+> ⚠️ Disclaimer: Anonymisation is hard.
+    The data privacy and security techniques used in this project, such as K-Anonymity and data redaction, are intended to 
+    assess and mitigate the risk of re-identification and _may_ provide you with a means to reduce the risk inherent in
+    working with private data. However, **they will not provide** complete anonymisation and should not be seen as foolproof
+    solutions. For some use cases you should seek more accepted means of anonymisation such as 
+    [differential privacy](https://en.wikipedia.org/wiki/Differential_privacy), or through the best technique
+    of all: Not collecting personal data to begin with.
+
+
 ## Features
 
-- Compute the K-Anonymity of a given dataset and work with the data to achieve K-Anonymity
-- Assess Uniqueness for a table to determine the risk of re-identifiability
+- Compute the `KAnonymity` of a given dataset and work with the data to achieve K-Anonymity
+- Compute the `LDiversity` of a given dataset and work with the data to achieve L-Diversity
+- A `Generaliser` capable of doing common transformations to data such as reducing date granularity, numerical bucketing etc
+- Assess the risk of re-identifiability of individuals in a dataset using the `UniquenessAnalyser`. For large datasets you
+  can use a more efficient, probabilistic technique described in this Google paper [KHyperLogLog](https://research.google/pubs/pub47664/)
+  with the `KHyperLogLogAnalyser`.
 
 ## Getting Started
+These methods are tools to aid in understanding and reducing re-identification risks and should be used as part of a
+broader data protection strategy. Remember, no single method can ensure total data privacy and security.
 
 ### KAnonymity
-
-This library provides utility functions to assess and ensure K-Anonymity on datasets using Apache Spark.
+K-Anonymity is a concept in data privacy that aims to ensure an individual's information cannot be distinguished from a
+least k-1 others in a dataset. Essentially, it means that each individual's data is indistinguishable from at least k-1 
+other individuals within the dataset. This is achieved by generalizing, suppressing, or altering specific identifiers 
+(like names, addresses, or other personal details) until each person cannot be uniquely identified from a group of at 
+least k individuals. K-Anonymity _might_ help mitigate the risk of re-identification in published data, making it useful 
+in protecting personal information in datasets. However, it's important to note that while K-Anonymity can reduce the 
+risk of identity disclosure, [it has been shown to be susceptible to re-identification attacks](https://course.ece.cmu.edu/~ece734/lectures/lecture-2018-10-08-deanonymization.pdf) 
 
 #### 1. Assessing KAnonymity
 You can assess if your dataset satisfies KAnonymity by using the `isKAnonymous` method:
+
 ```scala
 import org.mitchelllisle.kanonymity.KAnonymity
 import org.apache.spark.sql.SparkSession
@@ -63,6 +88,20 @@ val result = kAnon.removeLessThanKRows(data)
 ```
 
 > Note: Now if you run `isKAnonymous(result)` it will return `true` since we've removed the rows that don't satisfy K(2).
+
+
+###  L-Diversity
+L-Diversity is an extension of the K-Anonymity principle in data privacy, designed to enhance the protection against 
+certain types of attacks that K-Anonymity is susceptible to. While K-Anonymity ensures that each individual is 
+indistinguishable from at least k-1 others in the dataset, L-Diversity goes further by requiring that each group of 
+indistinguishable individuals has at least 'l' distinct values for sensitive attributes. This concept addresses the 
+limitation of K-Anonymity in scenarios where sensitive attributes within a group can be homogeneous, thereby still 
+posing a risk of attribute disclosure. L-Diversity _ensures diversity in sensitive information_, reducing the likelihood 
+that an individual's sensitive attributes can be accurately inferred within an anonymized dataset. It's particularly 
+useful in preventing attacks like homogeneity and background knowledge attacks, contributing to a more robust 
+privacy-preserving data publication. However, similar to K-Anonymity, L-Diversity is not a comprehensive solution. For
+more information (including the limitations of l-diversity) 
+I recommend reading [ℓ-Diversity: Privacy Beyond k-Anonymity](https://personal.utdallas.edu/~muratk/courses/privacy08f_files/ldiversity.pdf)
 
 ### Uniqueness Analyzer
 The `UniquenessAnalyser` class in `org.mitchelllisle.reidentifiability` package provides methods to analyze the 
