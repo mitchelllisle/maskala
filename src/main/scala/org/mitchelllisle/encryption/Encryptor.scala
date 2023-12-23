@@ -1,10 +1,23 @@
 package org.mitchelllisle.encryption
 
-import javax.crypto.Cipher
-import javax.crypto.SecretKey
-import javax.crypto.KeyGenerator
-import javax.crypto.spec.IvParameterSpec
+import org.apache.spark.sql.expressions.UserDefinedFunction
+
+import javax.crypto.{Cipher, KeyGenerator, SecretKey}
+import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 import java.util.Base64
+import org.apache.spark.sql.{DataFrame, functions => F}
+
+object SparkEncryptionUtil {
+  def encryptUDF(secretKey: SecretKey): UserDefinedFunction = F.udf((plaintext: String) => {
+    val encryptor = new Encryptor((secretKey))
+    if (plaintext != null) encryptor.encrypt(plaintext) else null
+  })
+
+  def decryptUDF(secretKey: SecretKey): UserDefinedFunction = F.udf((cipherText: String) => {
+    val encryptor = new Encryptor((secretKey))
+    if (cipherText != null) encryptor.decrypt(cipherText) else null
+  })
+}
 
 /** A class to handle encryption and decryption of strings using AES/CBC/PKCS5Padding. Requires a SecretKey for the AES
   * algorithm.
@@ -16,38 +29,47 @@ import java.util.Base64
   */
 class Encryptor(secret: SecretKey) {
 
-  private val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-  private val blockSize = new Array[Byte](cipher.getBlockSize)
+  @transient private lazy val cipher: Cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+  private val blockSize = cipher.getBlockSize
 
-  /** Encrypts a given string using AES/CBC/PKCS5Padding.
-    *
-    * @param value
-    *   The string to be encrypted.
-    * @return
-    *   The encrypted string, encoded in Base64.
-    */
   def encrypt(value: String): String = {
-    val ivSpec = new IvParameterSpec(blockSize)
+    val ivSpec = new IvParameterSpec(new Array[Byte](blockSize))
     cipher.init(Cipher.ENCRYPT_MODE, secret, ivSpec)
 
     val encrypted = cipher.doFinal(value.getBytes("UTF-8"))
     Base64.getEncoder.encodeToString(encrypted)
   }
 
-  /** Decrypts a given encrypted string (in Base64 format) using AES/CBC/PKCS5Padding.
-    *
-    * @param encryptedValue
-    *   The encrypted string in Base64 format to be decrypted.
-    * @return
-    *   The decrypted string.
-    */
   def decrypt(encryptedValue: String): String = {
-    val ivSpec = new IvParameterSpec(blockSize)
+    val ivSpec = new IvParameterSpec(new Array[Byte](blockSize))
     cipher.init(Cipher.DECRYPT_MODE, secret, ivSpec)
 
     val decodedBytes = Base64.getDecoder.decode(encryptedValue)
     val decryptedBytes = cipher.doFinal(decodedBytes)
     new String(decryptedBytes, "UTF-8")
+  }
+
+  /** Encrypts specified columns in a DataFrame.
+    *
+    * @param df
+    *   The DataFrame to be processed.
+    * @param columns
+    *   A sequence of column names to encrypt.
+    * @return
+    *   A DataFrame with specified columns encrypted.
+    */
+  def encrypt(df: DataFrame, columns: Seq[String]): DataFrame = {
+    columns.foldLeft(df) { (dataFrame, column) =>
+      val func = SparkEncryptionUtil.encryptUDF(secret)
+      dataFrame.withColumn(column, func(dataFrame(column)))
+    }
+  }
+
+  def decrypt(df: DataFrame, columns: Seq[String]): DataFrame = {
+    columns.foldLeft(df) { (dataFrame, column) =>
+      val func = SparkEncryptionUtil.decryptUDF(secret)
+      dataFrame.withColumn(column, func(dataFrame(column)))
+    }
   }
 }
 
