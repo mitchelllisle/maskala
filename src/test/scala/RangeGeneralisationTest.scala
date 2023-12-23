@@ -37,7 +37,7 @@ class RangeGeneralisationTest extends AnyFlatSpec with SparkFunSuite {
     val strategy = RangeGeneralisation("Numbers", 5)
 
     val generaliser = new Generaliser(Seq(strategy))
-    val result = generaliser.generalise(data).collect().map(row => row.getString(0))
+    val result = generaliser.apply(data).collect().map(row => row.getString(0))
     assert(result sameElements Array("0-4", "0-4", "0-4", "0-4", "5-9", "5-9", "5-9", "5-9", "5-9", "10-14"))
   }
 }

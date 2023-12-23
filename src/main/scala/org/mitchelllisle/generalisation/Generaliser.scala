@@ -25,10 +25,10 @@ class Generaliser(strategies: Seq[GeneralisationStrategy]) {
     * val rangeStrategy = RangeGeneralization("Numbers", 10)
     * val mapStrategy = MappingGeneralisation("Numbers", Map(1 -> "One", 5 -> "Five"))
     * val generaliser = new Generaliser(Seq(mapStrategy, rangeStrategy))
-    * val result = generaliser.generalise(data)
+    * val result = generaliser(data)
     *   }}}
     */
-  def generalise(data: DataFrame): DataFrame = {
+  def apply(data: DataFrame): DataFrame = {
     strategies.foldLeft(data) { (currentData, strategy) => strategy.apply(currentData) }
   }
 }
