@@ -1,4 +1,4 @@
-package org.mitchelllisle.generalisation
+package org.mitchelllisle.anonymisers.generalisation
 
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._

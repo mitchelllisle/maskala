@@ -1,5 +1,5 @@
+import org.mitchelllisle.anonymisers.encryption.Encryptor
 import org.scalatest.flatspec.AnyFlatSpec
-import org.mitchelllisle.encryption.Encryptor
 
 class EncryptorTest extends AnyFlatSpec with SparkFunSuite {
   private val secret = Encryptor.generateSecret()

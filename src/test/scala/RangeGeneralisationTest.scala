@@ -1,4 +1,4 @@
-import org.mitchelllisle.generalisation.{Generaliser, RangeGeneralisation}
+import org.mitchelllisle.anonymisers.generalisation.{Generaliser, RangeGeneralisation}
 import org.scalatest.flatspec.AnyFlatSpec
 
 class RangeGeneralisationTest extends AnyFlatSpec with SparkFunSuite {

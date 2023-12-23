@@ -41,7 +41,7 @@ risk of identity disclosure, [it has been shown to be susceptible to re-identifi
 You can assess if your dataset satisfies KAnonymity by using the `isKAnonymous` method:
 
 ```scala
-import org.mitchelllisle.kanonymity.KAnonymity
+
 import org.apache.spark.sql.SparkSession
 
 val spark = SparkSession.builder().getOrCreate()
@@ -64,7 +64,7 @@ val evaluated = kAnon.isKAnonymous(data) // returns false
 If you want a dataset that only contains the rows that meet KAnonymity, you can use the 1
 
 ```scala
-import org.mitchelllisle.kanonymity.KAnonymity
+
 import org.apache.spark.sql.SparkSession
 
 val spark = SparkSession.builder().getOrCreate()
@@ -109,7 +109,7 @@ uniqueness of values within a DataFrame using Spark. Uniqueness is a proxy for r
 engineering concept. This class helps evaluate re-identifiability risk metrics using data uniqueness as an indicator.
 
 ```scala
-import org.mitchelllisle.reidentifiability.UniquenessAnalyser
+
 import org.apache.spark.sql.SparkSession
 
 val spark = SparkSession.builder.getOrCreate()
@@ -125,7 +125,7 @@ The Redactor class along with redaction strategies allows for flexible redaction
 multiple redaction strategies including masking, hashing and more.
 
 ```scala
-import org.mitchelllisle.redaction.{Redactor, MaskingStrategy, HashingStrategy}
+
 import org.apache.spark.sql.SparkSession
 
 val spark = SparkSession.builder.getOrCreate()

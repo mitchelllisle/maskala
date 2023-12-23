@@ -1,4 +1,4 @@
-import org.mitchelllisle.generalisation.{CustomLevel, DateGeneralisation, MonthYear, QuarterYear, YearOnly}
+import org.mitchelllisle.anonymisers.generalisation.{CustomLevel, DateGeneralisation, MonthYear, QuarterYear, YearOnly}
 import org.scalatest.flatspec.AnyFlatSpec
 
 

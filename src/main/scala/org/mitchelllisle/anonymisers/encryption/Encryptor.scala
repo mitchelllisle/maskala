@@ -1,9 +1,9 @@
-package org.mitchelllisle.encryption
+package org.mitchelllisle.anonymisers.encryption
 
 import org.apache.spark.sql.expressions.UserDefinedFunction
 
 import javax.crypto.{Cipher, KeyGenerator, SecretKey}
-import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
+import javax.crypto.spec.IvParameterSpec
 import java.util.Base64
 import org.apache.spark.sql.{DataFrame, functions => F}
 

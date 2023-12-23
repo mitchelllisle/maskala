@@ -1,4 +1,4 @@
-package org.mitchelllisle.redaction
+package org.mitchelllisle.anonymisers.redaction
 
 import org.apache.spark.sql.{DataFrame, Column, functions => F}
 

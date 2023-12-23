@@ -1,4 +1,4 @@
-import org.mitchelllisle.generalisation.MappingGeneralisation
+import org.mitchelllisle.anonymisers.generalisation.MappingGeneralisation
 import org.scalatest.flatspec.AnyFlatSpec
 
 

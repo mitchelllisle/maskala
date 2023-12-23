@@ -1,0 +1,16 @@
+catalog: bronze
+schema: netflix
+table: ratings
+anonymise:
+  - column: user_id
+    strategy: EncryptRedact
+  - column: rating
+    strategy: RangeGeneralise
+  - column: date
+    strategy: DateGeneralise
+  - column: movie
+    strategy: HashRedact
+analyse:
+  - type: uniqueness
+  - type: k-anonymity
+  - type: l-diversity

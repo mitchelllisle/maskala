@@ -1,4 +1,4 @@
-import org.mitchelllisle.redaction.{HashingStrategy, MaskingStrategy, Redactor}
+import org.mitchelllisle.anonymisers.redaction.{HashingStrategy, MaskingStrategy, Redactor}
 import org.scalatest.flatspec.AnyFlatSpec
 
 class RedactorTest extends AnyFlatSpec with SparkFunSuite {

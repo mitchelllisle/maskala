@@ -1,7 +1,7 @@
-import org.mitchelllisle.ldiversity.LDiversity
 import org.scalatest.flatspec.AnyFlatSpec
 
 import org.apache.spark.sql.{functions => F}
+import org.mitchelllisle.analysers.ldiversity.LDiversity
 
 class LDiversityTest extends AnyFlatSpec with SparkFunSuite {
 

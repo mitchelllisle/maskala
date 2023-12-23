@@ -1,4 +1,4 @@
-import org.mitchelllisle.redaction.MaskingStrategy
+import org.mitchelllisle.anonymisers.redaction.MaskingStrategy
 import org.scalatest.flatspec.AnyFlatSpec
 
 class MaskingStrategyTest extends AnyFlatSpec with SparkFunSuite {

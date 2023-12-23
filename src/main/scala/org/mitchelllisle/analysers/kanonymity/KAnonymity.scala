@@ -1,4 +1,4 @@
-package org.mitchelllisle.kanonymity
+package org.mitchelllisle.analysers.kanonymity
 
 import org.apache.spark.sql.{DataFrame, functions => F}
 

@@ -1,5 +1,5 @@
 import org.apache.spark.sql.DataFrame
-import org.mitchelllisle.kanonymity.KAnonymity
+import org.mitchelllisle.analysers.kanonymity.KAnonymity
 import org.scalatest.flatspec.AnyFlatSpec
 
 class KAnonymityTest extends AnyFlatSpec with SparkFunSuite {
