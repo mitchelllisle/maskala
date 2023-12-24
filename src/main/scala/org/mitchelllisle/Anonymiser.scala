@@ -50,20 +50,27 @@ class Anonymiser(configFilePath: String) {
     }
   }
 
+  private def getParams[T](parameters: Option[Map[String, String]])(implicit decoder: Decoder[T]): T = {
+    mapToCaseClass[T](parameters.getOrElse(Map.empty))
+  }
+
   def apply(data: DataFrame): DataFrame = {
     config.anonymise.foldLeft(data) { (currentData, columnConfig) =>
       columnConfig.strategy match {
         case "MaskingStrategy" =>
-          val params = mapToCaseClass[MaskingParams](columnConfig.parameters.getOrElse(Map.empty))
+          val params = getParams[MaskingParams](columnConfig.parameters)
           MaskingStrategy(columnConfig.column).apply(currentData, params)
         case "HashingStrategy" =>
           HashingStrategy(columnConfig.column).apply(currentData)
         case "RangeStrategy" =>
-          val params = mapToCaseClass[RangeParams](columnConfig.parameters.getOrElse(Map.empty))
+          val params = getParams[RangeParams](columnConfig.parameters)
           RangeStrategy(columnConfig.column).apply(currentData, params)
         case "DateStrategy" =>
-          val params = mapToCaseClass[DateParams](columnConfig.parameters.getOrElse(Map.empty))
+          val params = getParams[DateParams](columnConfig.parameters)
           DateStrategy(columnConfig.column).apply(currentData, params)
+        case "MappingStrategy" =>
+          val params = getParams[MappingParams](columnConfig.parameters)
+          MappingStrategy(columnConfig.column).apply(data, params)
       }
     }
   }
