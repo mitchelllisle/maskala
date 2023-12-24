@@ -1,0 +1,40 @@
+version: 1
+catalog: bronze
+schema: netflix
+table: ratings
+anonymise:
+  - column: movie
+    strategy: MaskingStrategy
+    parameters:
+      mask: "*"
+  - column: user_id
+    strategy: HashingStrategy
+  - column: user_id
+    strategy: EncryptionStrategy
+    parameters:
+      secret: O2Ls0Y1EI9+HJAu0SdHsWD2ag/4RfwrqJUDcTpDYlZc=
+  - column: rating
+    strategy: RangeStrategy
+    parameters:
+      rangeWidth: "5"
+      separator: "-"
+  - column: date
+    strategy: DateStrategy
+    parameters:
+      format: yyyy-MM
+  - column: location
+    strategy: MappingStrategy
+    parameters:
+      mapping: |
+        France=Europe,
+        Belgium=Europe
+analyse:
+  - type: uniqueness
+    parameters:
+      idColumn: user_id
+  - type: k-anonymity
+    parameters:
+      k: "10"
+  - type: l-diversity
+    parameters:
+      l: "10"

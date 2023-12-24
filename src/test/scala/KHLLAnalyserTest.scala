@@ -1,4 +1,4 @@
-import org.mitchelllisle.reidentifiability.KHyperLogLogAnalyser
+import org.mitchelllisle.analysers.KHyperLogLogAnalyser
 import org.scalatest.flatspec.AnyFlatSpec
 
 class KHLLAnalyserTest extends AnyFlatSpec with SparkFunSuite {
