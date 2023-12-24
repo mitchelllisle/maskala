@@ -30,5 +30,11 @@ anonymise:
         Belgium=Europe
 analyse:
   - type: uniqueness
+    parameters:
+      idColumn: user_id
   - type: k-anonymity
+    parameters:
+      k: "10"
   - type: l-diversity
+    parameters:
+      l: "10"

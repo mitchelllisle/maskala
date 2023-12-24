@@ -14,6 +14,7 @@ class AnonymiserTest extends AnyFlatSpec with SparkFunSuite {
     assert(config.analyse.length == 3)
   }
 
+  //  TODO finish test
   "Running anonymiser" should "use the provided strategies" in {
     val anonymiser = new Anonymiser(configPath)
     val anonymised = anonymiser.runAnonymisers(sampleNetflixData)

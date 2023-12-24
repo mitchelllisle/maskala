@@ -1,7 +1,7 @@
-package org.mitchelllisle.analysers.reidentifiability
+package org.mitchelllisle.analysers
 
-import org.apache.spark.sql.{DataFrame, functions => F}
 import org.apache.spark.sql.expressions.Window
+import org.apache.spark.sql.{DataFrame, functions => F}
 
 /** KHyperLogLogAnalyser is a class to analyze the cardinality of values within a DataFrame using the KHLL algorithm and
   * Spark. This class is inspired by and adapted from the original concept by Google. You can find the implementation in

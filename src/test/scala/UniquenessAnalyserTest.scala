@@ -1,4 +1,4 @@
-import org.mitchelllisle.analysers.reidentifiability.UniquenessAnalyser
+import org.mitchelllisle.analysers.UniquenessAnalyser
 import org.scalatest.flatspec.AnyFlatSpec
 
 class UniquenessAnalyserTest extends AnyFlatSpec with SparkFunSuite {

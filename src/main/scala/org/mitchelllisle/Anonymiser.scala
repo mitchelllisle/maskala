@@ -8,6 +8,7 @@ import io.circe.yaml.parser
 import scala.io.Source
 import org.apache.spark.sql.DataFrame
 import org.mitchelllisle.anonymisers._
+import org.mitchelllisle.analysers._
 
 case class AnonymisationConfig(
     catalog: String,
@@ -19,7 +20,7 @@ case class AnonymisationConfig(
 
 case class ColumnAnonymisation(column: String, strategy: String, parameters: Option[Map[String, String]])
 
-case class AnalysisType(`type`: String)
+case class AnalysisType(`type`: String, parameters: Option[Map[String, String]])
 
 class ConfigError(message: String, cause: Throwable = null) extends Exception(message, cause)
 
@@ -79,7 +80,7 @@ class Anonymiser(configFilePath: String) {
     }
   }
 
-  def apply(data: DataFrame): DataFrame = {
-    runAnonymisers(data)
+  def apply(data: DataFrame): Unit = {
+    val anonymised = runAnonymisers(data)
   }
 }

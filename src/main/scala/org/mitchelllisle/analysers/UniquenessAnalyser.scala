@@ -1,4 +1,4 @@
-package org.mitchelllisle.analysers.reidentifiability
+package org.mitchelllisle.analysers
 
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.{Column, DataFrame, functions => F}
