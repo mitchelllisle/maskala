@@ -10,8 +10,8 @@ class AnonymiserTest extends AnyFlatSpec with SparkFunSuite {
     assert(config.catalog == "bronze")
     assert(config.schema == "netflix")
     assert(config.table == "ratings")
-//    assert(config.anonymise.length == 4)
-//    assert(config.analyse.length == 3)
+    assert(config.anonymise.length == 6)
+    assert(config.analyse.length == 3)
   }
 
   "Running anonymiser" should "use the provided strategies" in {

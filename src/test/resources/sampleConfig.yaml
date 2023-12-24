@@ -1,3 +1,4 @@
+version: 1
 catalog: bronze
 schema: netflix
 table: ratings
@@ -8,6 +9,10 @@ anonymise:
       mask: "*"
   - column: user_id
     strategy: HashingStrategy
+  - column: user_id
+    strategy: EncryptionStrategy
+    parameters:
+      secret: O2Ls0Y1EI9+HJAu0SdHsWD2ag/4RfwrqJUDcTpDYlZc=
   - column: rating
     strategy: RangeStrategy
     parameters:
@@ -17,6 +22,12 @@ anonymise:
     strategy: DateStrategy
     parameters:
       format: yyyy-MM
+  - column: location
+    strategy: MappingStrategy
+    parameters:
+      mapping: |
+        France=Europe,
+        Belgium=Europe
 analyse:
   - type: uniqueness
   - type: k-anonymity

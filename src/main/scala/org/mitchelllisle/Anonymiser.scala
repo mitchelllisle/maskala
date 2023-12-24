@@ -70,7 +70,11 @@ class Anonymiser(configFilePath: String) {
           DateStrategy(columnConfig.column).apply(currentData, params)
         case "MappingStrategy" =>
           val params = getParams[MappingParams](columnConfig.parameters)
-          MappingStrategy(columnConfig.column).apply(data, params)
+          MappingStrategy(columnConfig.column).apply(currentData, params)
+        case "EncryptionStrategy" =>
+          val params = getParams[EncryptionParams](columnConfig.parameters)
+          EncryptionStrategy(columnConfig.column).apply(currentData, params)
+        case _ => throw new ConfigError(s"${columnConfig.strategy} is not a recognised anonymisation strategy")
       }
     }
   }
