@@ -1,7 +1,7 @@
-import org.mitchelllisle.ldiversity.LDiversity
 import org.scalatest.flatspec.AnyFlatSpec
 
 import org.apache.spark.sql.{functions => F}
+import org.mitchelllisle.analysers.LDiversity
 
 class LDiversityTest extends AnyFlatSpec with SparkFunSuite {
 
@@ -9,13 +9,13 @@ class LDiversityTest extends AnyFlatSpec with SparkFunSuite {
 
   "Running L-Diversity" should "correctly count groups" in {
     val lDiv = new LDiversity(l = 3)
-    val output = lDiv(sampleNetflixData.drop("date"), "user_id")
+    val output = lDiv(sampleNetflixData.drop("date", "location"), "user_id")
     assert(output.count() == 40)
   }
 
   "Removing rows" should "not include non LDiverse rows" in {
     val lDiv = new LDiversity(l = 7)
-    val output = lDiv.removeLessThanLRows(sampleNetflixData.drop("date"), "user_id")
+    val output = lDiv.removeLessThanLRows(sampleNetflixData.drop("date", "location"), "user_id")
     assert(output.filter(F.col("distinctCount") < 7).count() == 0)
   }
 

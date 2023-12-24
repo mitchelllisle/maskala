@@ -1,7 +1,6 @@
-package org.mitchelllisle.ldiversity
+package org.mitchelllisle.analysers
 
-import org.apache.spark.sql.{DataFrame, functions => F, Column}
-import org.mitchelllisle.kanonymity.KAnonymity
+import org.apache.spark.sql.{Column, DataFrame, functions => F}
 
 /** A class for implementing L-Diversity on DataFrames.
   *

@@ -1,6 +1,6 @@
-package org.mitchelllisle.redaction
+package org.mitchelllisle.anonymisers
 
-import org.apache.spark.sql.{DataFrame, Column, functions => F}
+import org.apache.spark.sql.{Column, DataFrame, functions => F}
 
 /** HashingStrategy class is used for redacting sensitive data in a DataFrame by applying a hashing function. The design
   * paradigm adopted allows hashing with additional security measures such as 'salt' and 'pepper' to further decrease
@@ -9,7 +9,7 @@ import org.apache.spark.sql.{DataFrame, Column, functions => F}
   * @param column
   *   The dataframe column intended for redaction via hashing.
   */
-case class HashingStrategy(column: String) extends RedactionStrategy {
+case class HashingStrategy(column: String) extends AnonymiserStrategy {
 
   /** Computes the hash of a given column value using the SHA-256 algorithm. SHA-256 was chosen as it provides a good
     * balance between security and performance.
@@ -46,7 +46,7 @@ case class HashingStrategy(column: String) extends RedactionStrategy {
     * @return
     *   A new DataFrame with values in the specified column replaced by their securely hashed versions.
     */
-  def apply(data: DataFrame): DataFrame = {
+  override def apply(data: DataFrame, params: AnonymisationParams): DataFrame = {
     data.withColumn(column, hashColumn(F.col(column)))
   }
 
