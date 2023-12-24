@@ -22,6 +22,8 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-hive" % sparkVersion % "provided",
   "io.circe" %% "circe-generic" % circeVersion,
   "io.circe" %% "circe-yaml" % circeVersion,
+  "io.circe" %% "circe-core" % circeVersion,
+  "io.circe" %% "circe-parser" % circeVersion,
   "com.swoop" %% "spark-alchemy" % "1.2.1"
 )
 

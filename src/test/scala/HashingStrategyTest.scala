@@ -1,5 +1,5 @@
 import org.apache.spark.sql.DataFrame
-import org.mitchelllisle.anonymisers.redaction.HashingStrategy
+import org.mitchelllisle.anonymisers.HashingStrategy
 import org.scalatest.flatspec.AnyFlatSpec
 
 class HashingStrategyTest extends AnyFlatSpec with SparkFunSuite {

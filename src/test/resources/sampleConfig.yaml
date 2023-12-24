@@ -2,14 +2,21 @@ catalog: bronze
 schema: netflix
 table: ratings
 anonymise:
-  - column: user_id
-    strategy: EncryptRedact
-  - column: rating
-    strategy: RangeGeneralise
-  - column: date
-    strategy: DateGeneralise
   - column: movie
-    strategy: HashRedact
+    strategy: MaskingStrategy
+    parameters:
+      mask: "*"
+  - column: user_id
+    strategy: HashingStrategy
+  - column: rating
+    strategy: RangeStrategy
+    parameters:
+      rangeWidth: "5"
+      separator: "-"
+  - column: date
+    strategy: DateStrategy
+    parameters:
+      format: yyyy-MM
 analyse:
   - type: uniqueness
   - type: k-anonymity
