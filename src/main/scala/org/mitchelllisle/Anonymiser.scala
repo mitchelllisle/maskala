@@ -54,7 +54,7 @@ class Anonymiser(configFilePath: String) {
     mapToCaseClass[T](parameters.getOrElse(Map.empty))
   }
 
-  def apply(data: DataFrame): DataFrame = {
+  def runAnonymisers(data: DataFrame): DataFrame = {
     config.anonymise.foldLeft(data) { (currentData, columnConfig) =>
       columnConfig.strategy match {
         case "MaskingStrategy" =>
@@ -77,5 +77,9 @@ class Anonymiser(configFilePath: String) {
         case _ => throw new ConfigError(s"${columnConfig.strategy} is not a recognised anonymisation strategy")
       }
     }
+  }
+
+  def apply(data: DataFrame): DataFrame = {
+    runAnonymisers(data)
   }
 }
