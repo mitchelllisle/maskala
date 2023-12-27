@@ -17,12 +17,56 @@ from re-identification.
 
 ## Features
 
-- Compute the `KAnonymity` of a given dataset and work with the data to achieve K-Anonymity
-- Compute the `LDiversity` of a given dataset and work with the data to achieve ℓ-Diversity
-- A `Generaliser` capable of doing common transformations to data such as reducing date granularity, numerical bucketing etc
-- Assess the risk of re-identifiability of individuals in a dataset using the `UniquenessAnalyser`. For large datasets you
-  can use a more efficient, probabilistic technique described in this Google paper [KHyperLogLog](https://research.google/pubs/pub47664/)
-  with the `KHyperLogLogAnalyser`.
+### Anonymiser
+The Anonymiser class is part of the Scala-based data anonymisation toolkit designed to apply various anonymisation 
+strategies to data stored in Apache Spark DataFrames. This toolkit allows for the configuration-driven anonymisation of 
+specific columns in a DataFrame, supporting strategies like masking, encryption, range generalisation, and more.
+
+Let's step through an example. Imagine we have the following data (Note: This is an example Netflix dataset from the )
+
+```csv
+user_id,rating,date,movie,location
+1815755,5,2004-07-20,Dinosaur Planet,Dominica
+1426604,4,2005-09-01,Dinosaur Planet,Svalbard & Jan Mayen Islands
+1535440,4,2005-08-18,Dinosaur Planet,Monaco
+```
+
+```scala
+import org.apache.spark.sql.SparkSession
+import org.mitchelllisle.Anonymiser
+
+val spark = SparkSession.builder.appName("AnonymisationApp").getOrCreate()
+val df = spark.read.load("your-data-source")
+
+val anonymiser = new Anonymiser("path/to/your/config.yaml")
+anonymiser(df)
+
+```
+
+```yaml
+catalog: 'your_catalog'
+schema: 'your_schema'
+table: 'your_table'
+anonymise:
+  - column: 'columnName1'
+    strategy: 'MaskingStrategy'
+    parameters:
+      mask: 'XXXX'
+  - column: 'columnName2'
+    strategy: 'RangeStrategy'
+    parameters:
+      rangeWidth: 10
+      separator: '-'
+  - column: 'columnName3'
+    strategy: 'EncryptionStrategy'
+    parameters:
+      secret: 'your-secret-key'
+analyse:
+  - type: 'AnalysisType1'
+    parameters:
+      param1: 'value1'
+      param2: 'value2'
+```
 
 ## Getting Started
 These methods are tools to aid in understanding and reducing re-identification risks and should be used as part of a

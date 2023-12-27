@@ -3,6 +3,8 @@ package org.mitchelllisle.analysers
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.{Column, DataFrame, functions => F}
 
+case class UniquenessParams(idColumn: String) extends AnalyserParams
+
 /** A class to analyze the uniqueness of values within a DataFrame using Spark. This class provides methods to read data
   * from a specified table, calculate uniqueness, and generate uniqueness distribution data.
   *
