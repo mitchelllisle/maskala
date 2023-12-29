@@ -35,6 +35,8 @@ analyse:
   - type: k-anonymity
     parameters:
       k: "10"
+      idColumn: user_id
   - type: l-diversity
     parameters:
       l: "10"
+      idColumn: user_id

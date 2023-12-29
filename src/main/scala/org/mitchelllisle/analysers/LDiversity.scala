@@ -2,6 +2,8 @@ package org.mitchelllisle.analysers
 
 import org.apache.spark.sql.{Column, DataFrame, functions => F}
 
+case class LDiversityParams(l: Int, idColumn: String) extends AnalyserParams
+
 /** A class for implementing L-Diversity on DataFrames.
   *
   * L-Diversity is a privacy principle that extends K-Anonymity. It demands that each equivalence class (a set of
@@ -50,20 +52,5 @@ class LDiversity(l: Int, k: Int = 1) extends KAnonymity(k) {
   def isLDiverse(data: DataFrame, sensitiveColumn: String): Boolean = {
     val distinctCountData = apply(data, sensitiveColumn)
     distinctCountData.filter(F.col("distinctCount") < l).count() == 0
-  }
-
-  /** Filters the DataFrame to only include rows where the group of non-sensitive attributes contains at least l
-    * distinct sensitive values.
-    *
-    * @param data
-    *   DataFrame containing the dataset.
-    * @param sensitiveColumn
-    *   The sensitive column that needs to have at least l diverse values.
-    * @return
-    *   A DataFrame with rows that do not satisfy the l-diversity conditions removed.
-    */
-  def removeLessThanLRows(data: DataFrame, sensitiveColumn: String): DataFrame = {
-    val distinctCountData = apply(data, sensitiveColumn)
-    distinctCountData.filter(F.col("distinctCount") >= l)
   }
 }

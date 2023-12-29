@@ -139,7 +139,19 @@ class Anonymiser(configFilePath: String) {
         case "uniqueness" =>
           val params = getParams[UniquenessParams](analysisConfig.parameters)
           val output = UniquenessAnalyser(data, data.columns, userIdColumn = params.idColumn)
+          output.show()
           output
+        case "k-anonymity" =>
+          val params = getParams[KAnonymityParams](analysisConfig.parameters)
+          val output = new KAnonymity(params.k).apply(data, params.idColumn)
+          output.show()
+          output
+        case "l-diversity" =>
+          val params = getParams[LDiversityParams](analysisConfig.parameters)
+          val output = new LDiversity(params.l).apply(data, params.idColumn)
+          output.show()
+          output
+        case _ => throw new ConfigError(s"${analysisConfig.`type`} is not a recognised analyser")
       }
     }
   }
@@ -149,7 +161,15 @@ class Anonymiser(configFilePath: String) {
    * @param data The DataFrame to be processed.
    */
   def apply(data: DataFrame): Unit = {
-    val anonymised = runAnonymisers(data)
-    runAnalysers(anonymised)
+    if (config.anonymise.isEmpty) {
+      throw new RuntimeException(
+        "No anonymisation strategies provided. You must supply a config with at least one anonymisation strategy."
+      )
+    } else {
+      val anonymised = runAnonymisers(data)
+      if (config.analyse.nonEmpty) {
+        runAnalysers(anonymised)
+      }
+    }
   }
 }

@@ -21,6 +21,7 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % sparkVersion % "provided",
   "org.apache.spark" %% "spark-hive" % sparkVersion % "provided",
   "io.circe" %% "circe-generic" % circeVersion,
+  "com.amazonaws.secretsmanager" % "aws-secretsmanager-caching-java" % "1.0.2",
   "io.circe" %% "circe-yaml" % "1.15.0",
   "io.circe" %% "circe-core" % circeVersion,
   "io.circe" %% "circe-parser" % circeVersion,
