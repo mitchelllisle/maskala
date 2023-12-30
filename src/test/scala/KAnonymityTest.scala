@@ -6,34 +6,27 @@ class KAnonymityTest extends AnyFlatSpec with SparkFunSuite {
   import spark.implicits._
 
   val data: DataFrame = Seq(
-    ("30", "Male"),
-    ("30", "Male"),
-    ("27", "Female"),
-    ("45", "Female")
-  ).toDF("Age", "Gender")
+    ("1234", "30", "Male"),
+    ("1235", "30", "Male"),
+    ("1236", "27", "Female"),
+    ("1237", "27", "Female")
+  ).toDF("ID", "Age", "Gender")
 
   val kAnon = new KAnonymity(2)
 
   "isKAnonymous" should "return true for k-anonymous data" in {
-    val data = Seq(
-      ("1234", "Male"),
-      ("1234", "Male"),
-      ("1236", "Female"),
-      ("1236", "Female")
-    ).toDF("ID", "Gender")
-
-    assert(kAnon.isKAnonymous(data))
+    // excluding the ID column should result in k-anonymous data
+    assert(kAnon.isKAnonymous(data, Some("ID")))
   }
 
   "isKAnonymous" should "return false for non k-anonymous data" in {
-
-    val allUniqueData = Seq(
-      ("1234", "Male"),
-      ("1235", "Male"),
-      ("1236", "Female"),
-      ("1237", "Male")
-    ).toDF("ID", "Gender")
-
-    assert(!kAnon.isKAnonymous(allUniqueData))
+    // including the ID column should result in k-anonymous data
+    assert(!kAnon.isKAnonymous(data, None))
   }
+
+  "apply" should "return a DataFrame with a row_hash column" in {
+    val kData = kAnon(data, Some("ID"))
+    assert(kData.columns.contains("row_hash"))
+  }
+
 }

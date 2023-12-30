@@ -36,7 +36,7 @@ object SparkEncryptionUtil {
    * @return A UserDefinedFunction that takes an encrypted string and returns its plaintext form.
    */
   def decryptUDF(secretKey: SecretKey): UserDefinedFunction = F.udf((cipherText: String) => {
-    val encryptor = new Encryptor((secretKey))
+    val encryptor = new Encryptor(secretKey)
     if (cipherText != null) encryptor.decrypt(cipherText) else null
   })
 }
