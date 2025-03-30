@@ -1,12 +1,12 @@
 package org.mitchelllisle.utils
 
-import org.apache.spark.sql.DataFrame
-import org.mitchelllisle.anonymisers.SparkEncryptionUtil
+import org.apache.spark.sql.expressions.UserDefinedFunction
+import org.apache.spark.sql.{DataFrame, functions => F}
 
 import java.util.Base64
 import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 import javax.crypto.{Cipher, KeyGenerator, SecretKey}
-import scala.util.Random
+import java.security.SecureRandom
 
 /** A utility class for encrypting and decrypting strings using the AES algorithm in CBC mode with PKCS5Padding. It
   * leverages a provided SecretKey for cryptographic operations.
@@ -16,10 +16,18 @@ import scala.util.Random
   * @param secret
   *   The SecretKey used for encryption and decryption operations.
   */
-class Encryptor(secret: SecretKey) {
+class Encryptor(secret: SecretKey) extends Serializable {
 
   @transient private lazy val cipher: Cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+
   private val blockSize = cipher.getBlockSize
+
+  private val encryptUDF: UserDefinedFunction = F.udf((plaintext: String) => {
+    if (plaintext != null) encrypt(plaintext) else null
+  })
+  private val decryptUDF: UserDefinedFunction = F.udf((ciphertext: String) => {
+    if (ciphertext != null) decrypt(ciphertext) else null
+  })
 
   /** Encrypts a string value using AES/CBC/PKCS5Padding.
     *
@@ -33,8 +41,9 @@ class Encryptor(secret: SecretKey) {
     *   The encrypted string, encoded in Base64.
     */
   def encrypt(value: String): String = {
+    val random = new SecureRandom()
     val iv = new Array[Byte](blockSize)
-    Random.nextBytes(iv)
+    random.nextBytes(iv)
 
     val ivSpec = new IvParameterSpec(iv)
     cipher.init(Cipher.ENCRYPT_MODE, secret, ivSpec)
@@ -80,8 +89,7 @@ class Encryptor(secret: SecretKey) {
     */
   def encrypt(df: DataFrame, columns: Seq[String]): DataFrame = {
     columns.foldLeft(df) { (dataFrame, column) =>
-      val func = SparkEncryptionUtil.encryptUDF(secret)
-      dataFrame.withColumn(column, func(dataFrame(column)))
+      dataFrame.withColumn(column, encryptUDF(dataFrame(column)))
     }
   }
 
@@ -98,8 +106,7 @@ class Encryptor(secret: SecretKey) {
     */
   def decrypt(df: DataFrame, columns: Seq[String]): DataFrame = {
     columns.foldLeft(df) { (dataFrame, column) =>
-      val func = SparkEncryptionUtil.decryptUDF(secret)
-      dataFrame.withColumn(column, func(dataFrame(column)))
+      dataFrame.withColumn(column, decryptUDF(dataFrame(column)))
     }
   }
 }

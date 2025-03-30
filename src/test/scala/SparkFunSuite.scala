@@ -13,4 +13,3 @@ trait SparkFunSuite {
     .option("header", "true")
     .csv("src/test/resources/netflix.csv")
 }
-

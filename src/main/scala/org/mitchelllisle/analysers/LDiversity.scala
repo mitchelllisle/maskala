@@ -2,7 +2,7 @@ package org.mitchelllisle.analysers
 
 import org.apache.spark.sql.{Column, DataFrame, functions => F}
 
-case class LDiversityParams(l: Int, idColumn: String) extends AnalyserParams
+case class LDiversityParams(l: Int, sensitiveColumn: String, idColumn: String) extends AnalyserParams
 
 /** A class for implementing L-Diversity on DataFrames.
   *
@@ -31,8 +31,12 @@ class LDiversity(l: Int, k: Int = 1) extends KAnonymity(k) {
     *   A DataFrame with grouped data and a new column "distinctCount" representing the count of distinct sensitive
     *   values.
     */
-  def apply(data: DataFrame, sensitiveColumn: String): DataFrame = {
-    val groupColumns: Array[Column] = data.columns.filter(_ != sensitiveColumn).map(F.col)
+  def apply(data: DataFrame, sensitiveColumn: String, idColumn: String): DataFrame = {
+    val groupColumns: Array[Column] = data
+      .columns
+      .filter(_ != idColumn)
+      .filter(_ != sensitiveColumn)
+      .map(F.col)
     data
       .groupBy(groupColumns: _*) // We want the resulting DataFrame to have all groupBy columns in the result
       .agg(F.countDistinct(sensitiveColumn).as("distinctCount"))
@@ -49,8 +53,8 @@ class LDiversity(l: Int, k: Int = 1) extends KAnonymity(k) {
     * @return
     *   A Boolean indicating if the DataFrame meets L-Diversity.
     */
-  def isLDiverse(data: DataFrame, sensitiveColumn: String): Boolean = {
-    val distinctCountData = apply(data, sensitiveColumn)
+  def isLDiverse(data: DataFrame, sensitiveColumn: String, idColumn: String): Boolean = {
+    val distinctCountData = apply(data, sensitiveColumn, idColumn)
     distinctCountData.filter(F.col("distinctCount") < l).count() == 0
   }
 }

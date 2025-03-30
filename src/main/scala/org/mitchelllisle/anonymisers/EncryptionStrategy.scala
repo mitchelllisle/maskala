@@ -1,8 +1,6 @@
 package org.mitchelllisle.anonymisers
 
-import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.{DataFrame, functions => F}
-import javax.crypto.SecretKey
+import org.apache.spark.sql.DataFrame
 import org.mitchelllisle.utils.Encryptor
 
 /** Represents parameters for encryption-based anonymisation.
@@ -11,35 +9,6 @@ import org.mitchelllisle.utils.Encryptor
  *               This should be a strong, unique identifier that can be securely stored and accessed.
  */
 case class EncryptionParams(secret: String) extends AnonymisationParams
-
-/** Utility object providing UDFs for encryption and decryption in Spark DataFrames.
- *
- * This object includes methods to create UDFs for encrypting and decrypting string data.
- * The UDFs use the provided SecretKey to perform the cryptographic operations.
- */
-object SparkEncryptionUtil {
-
-  /** Creates a UDF for encrypting strings in a DataFrame. We need this util so that there is a serialisable object
-   * we can pass to a Spark operation. Without this we were running into can't serialise errors.
-   *
-   * @param secretKey The SecretKey used for encryption.
-   * @return A UserDefinedFunction that takes a string and returns its encrypted form.
-   */
-  def encryptUDF(secretKey: SecretKey): UserDefinedFunction = F.udf((plaintext: String) => {
-    val encryptor = new Encryptor(secretKey)
-    if (plaintext != null) encryptor.encrypt(plaintext) else null
-  })
-
-  /** Creates a UDF for decrypting strings in a DataFrame.
-   *
-   * @param secretKey The SecretKey used for decryption.
-   * @return A UserDefinedFunction that takes an encrypted string and returns its plaintext form.
-   */
-  def decryptUDF(secretKey: SecretKey): UserDefinedFunction = F.udf((cipherText: String) => {
-    val encryptor = new Encryptor(secretKey)
-    if (cipherText != null) encryptor.decrypt(cipherText) else null
-  })
-}
 
 /** Implements a strategy for anonymising data by encrypting the values in a specified column.
  *
@@ -66,8 +35,8 @@ case class EncryptionStrategy(column: String) extends AnonymiserStrategy {
     params match {
       case ep: EncryptionParams =>
         val secretKey = Encryptor.stringToKey(ep.secret)
-        val crypt = SparkEncryptionUtil.encryptUDF(secretKey)
-        data.withColumn(column, crypt(data(column)))
+        val encryptor = new Encryptor(secretKey)
+        encryptor.encrypt(data, Seq(column))
       case _ => throw new IllegalArgumentException("Invalid configuration for EncryptionStrategy")
     }
   }

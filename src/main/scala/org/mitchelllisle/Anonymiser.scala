@@ -148,7 +148,7 @@ class Anonymiser(configFilePath: String) {
           output
         case "l-diversity" =>
           val params = getParams[LDiversityParams](analysisConfig.parameters)
-          val output = new LDiversity(params.l).apply(data, params.idColumn)
+          val output = new LDiversity(params.l).apply(data, params.sensitiveColumn, params.idColumn)
           output.show()
           output
         case _ => throw new ConfigError(s"${analysisConfig.`type`} is not a recognised analyser")
