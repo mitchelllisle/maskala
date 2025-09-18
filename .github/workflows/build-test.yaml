@@ -22,7 +22,9 @@ jobs:
           java-version: 17
           cache: sbt
 
-      - uses: sbt/setup-sbt@v1
+      - name: Install SBT
+        run: sudo apt-get update && sudo apt-get install -y sbt
+
       - name: Run tests
         run: sbt clean coverage test coverageReport
       - name: Upload coverage reports to Codecov
