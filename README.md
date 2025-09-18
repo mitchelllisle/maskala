@@ -7,7 +7,7 @@ analysing, masking, generalising and filtering data to help ensure the identity 
 from re-identification.
 
 > [!WARNING]
-> ⚠️ Disclaimer: Anonymisation is hard.
+> Disclaimer: Anonymisation is hard.
     The data privacy and security techniques used in this project, such as K-Anonymity and data redaction, are intended to 
     assess and mitigate the risk of re-identification and _may_ provide you with a means to reduce the risk inherent in
     working with private data. However, **they will not provide** complete anonymisation and should not be seen as foolproof
@@ -232,6 +232,94 @@ val data = spark.read.option("header", "true").csv("src/test/resources/netflix-s
 val redactedData = redactor(data)
 
 ```
+
+
+## **Merkle Tree Data Retention & Audit Trails**
+
+The `MerkleTreeAnalyser` provides cryptographic proof capabilities for data retention verification and tamper-evident audit trails. This is essential for regulatory compliance (GDPR, CCPA) and proving data deletion without revealing sensitive information.
+
+### **Creating Data Integrity Proofs**
+
+Generate cryptographic fingerprints of your datasets that change if any data is modified:
+```scala
+import org.mitchelllisle.analysers.MerkleTreeAnalyser
+
+val spark = SparkSession.builder().getOrCreate()
+val userData = spark.read.option("header", "true").csv("user-data.csv")
+
+// Create tamper-evident proof of current data state
+val dataProof = MerkleTreeAnalyser.createMerkleProof(
+  data = userData,
+  columns = Seq("email", "age", "location"), // Columns to include in proof
+  idColumn = "user_id"
+)
+
+println(s"Dataset fingerprint: ${dataProof.rootHash}")
+println(s"Record count: ${dataProof.recordCount}")
+```
+
+## Verifying Data Deletions
+Prove that specific records were actually deleted (not just hidden) with cryptographic evidence:
+
+```scala
+// Before deletion
+val beforeData = userData
+val beforeProof = MerkleTreeAnalyser.createMerkleProof(beforeData, columns, "user_id")
+
+// After user requests deletion
+val afterData = userData.filter($"user_id" =!= "user123")
+
+// Generate deletion proof
+val deletionProof = MerkleTreeAnalyser.verifyDeletion(
+  beforeData = beforeData,
+  afterData = afterData, 
+  deletedIds = Seq("user123"),
+  columns = columns,
+  idColumn = "user_id"
+)
+
+// Validate the proof
+val isValidDeletion = MerkleTreeAnalyser.validateDeletionProof(
+  deletionProof, 
+  expectedDeletions = 1
+)
+
+if (isValidDeletion) {
+  println("✓ Deletion cryptographically verified")
+  // Export proof for regulatory compliance
+  val proofJson = MerkleTreeAnalyser.exportProofAsJson(deletionProof.afterProof)
+}
+```
+
+## Combined Privacy & Retention Analysis
+Perform comprehensive analysis combining uniqueness assessment with retention proofs:
+
+```scala
+val (uniquenessAnalysis, retentionProof) = MerkleTreeAnalyser.combinedPrivacyAnalysis(
+  dataFrame = userData,
+  groupByColumns = Seq("age", "location"), // For uniqueness analysis
+  userIdColumn = "user_id",
+  retentionColumns = Seq("email", "age", "location"), // For retention proof
+  k = 2048
+)
+
+// Analyze re-identification risks
+uniquenessAnalysis.show()
+
+// Store cryptographic proof for audit trail  
+val auditTrail = MerkleTreeAnalyser.exportProofAsJson(retentionProof)
+```
+
+## Use Cases
+
+GDPR Right to be Forgotten: Provide mathematical proof of data deletion to users and regulators
+Data Integrity Monitoring: Detect unauthorized changes to sensitive datasets
+Audit Compliance: Create verifiable logs of data operations for regulatory requirements
+Zero-Knowledge Verification: Prove compliance without revealing actual data contents
+
+
+> [!NOTE]
+> Merkle trees provide tamper-evident proofs but should be combined with access controls and encryption for complete data protection. The root hash acts as a "digital fingerprint" - any change to the data completely changes the hash, making unauthorized modifications immediately detectable.
 
 ### Dependencies
 
