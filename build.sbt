@@ -1,4 +1,4 @@
-ThisBuild / version := "1.1.0"
+ThisBuild / version := "1.2.0"
 
 ThisBuild / scalaVersion := "2.12.20"
 
@@ -7,7 +7,7 @@ lazy val root = (project in file("."))
     name := "maskala",
     publishTo := Some("GitHub Maven Packages Repo" at "https://maven.pkg.github.com/mitchelllisle/maskala"),
     credentials += Credentials(
-      "GitHub Package Registry", "maven.pkg.github.com", System.getenv("USERNAME"), System.getenv("TOKEN")
+      "GitHub Package Registry", "maven.pkg.github.com", System.getenv("USERNAME"), System.getenv("GITHUB_TOKEN")
     )
 
   )
