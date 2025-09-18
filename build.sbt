@@ -1,6 +1,6 @@
-ThisBuild / version := "0.8.0"
+ThisBuild / version := "1.1.0"
 
-ThisBuild / scalaVersion := "2.12.18"
+ThisBuild / scalaVersion := "2.12.20"
 
 lazy val root = (project in file("."))
   .settings(
@@ -27,4 +27,4 @@ libraryDependencies ++= Seq(
   "com.swoop" %% "spark-alchemy" % "1.2.1"
 )
 
-dependencyOverrides += "org.scala-lang.modules" %% "scala-xml" % "2.1.0"
+dependencyOverrides += "org.scala-lang.modules" %% "scala-xml" % "2.4.0"
