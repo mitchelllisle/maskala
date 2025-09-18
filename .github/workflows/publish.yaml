@@ -3,6 +3,11 @@ name: Publish Library
 on:
   release:
     types: [published]
+    secrets:
+      GH_USERNAME:
+        required: true
+      GH_TOKEN:
+        required: true
 
 jobs:
   publish:
@@ -29,5 +34,5 @@ jobs:
       - name: Publish to GitHub Packages
         run: sbt +publish
         env:
-          USERNAME: ${{ secrets.USERNAME }}
-          TOKEN: ${{ secrets.TOKEN }}
+          USERNAME: ${{ secrets.GH_USERNAME }}
+          TOKEN: ${{ secrets.GH_TOKEN }}
