@@ -23,7 +23,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Set up sbt
-        uses: actions/setup-sbt@v2
+        uses: actions/setup-sbt@v1
         with:
           sbt-version: '1.x'
 
