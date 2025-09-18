@@ -7,7 +7,7 @@ lazy val root = (project in file("."))
     name := "maskala",
     publishTo := Some("GitHub Maven Packages Repo" at "https://maven.pkg.github.com/mitchelllisle/maskala"),
     credentials += Credentials(
-      "GitHub Package Registry", "maven.pkg.github.com", System.getenv("USERNAME"), System.getenv("GITHUB_TOKEN")
+      "GitHub Package Registry", "maven.pkg.github.com", System.getenv("GH_USERNAME"), System.getenv("GH_TOKEN")
     )
 
   )
