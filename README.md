@@ -7,7 +7,7 @@ analysing, masking, generalising and filtering data to help ensure the identity 
 from re-identification.
 
 > [!WARNING]
-> ⚠️ Disclaimer: Anonymisation is hard.
+> Disclaimer: Anonymisation is hard.
     The data privacy and security techniques used in this project, such as K-Anonymity and data redaction, are intended to 
     assess and mitigate the risk of re-identification and _may_ provide you with a means to reduce the risk inherent in
     working with private data. However, **they will not provide** complete anonymisation and should not be seen as foolproof
