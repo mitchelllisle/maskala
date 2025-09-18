@@ -30,7 +30,8 @@ jobs:
           sudo apt-get install -y sbt
 
       - name: Run tests
-        run: sbt clean coverage test coverageReport
+        run: sbt -J--add-opens=java.base/sun.nio.ch=ALL-UNNAMED clean coverage test coverageReport
+
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         env:
