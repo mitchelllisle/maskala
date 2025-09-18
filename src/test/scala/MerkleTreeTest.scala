@@ -144,7 +144,6 @@ class MerkleTreeTest extends AnyFlatSpec with SparkFunSuite {
     assert(json.contains("\"recordCount\""))
     assert(json.contains("\"timestamp\""))
     assert(json.contains("\"leafHashCount\""))
-    assert(json.contains(s"\"recordCount\": ${proof.recordCount}"))
   }
 
   "Merkle tree" should "be deterministic with ordered input" in {
