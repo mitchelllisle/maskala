@@ -30,9 +30,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y sbt
 
-
       - name: Publish to GitHub Packages
         run: sbt +publish
         env:
-          USERNAME: ${{ secrets.GH_USERNAME }}
-          TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_USERNAME: ${{ secrets.GH_USERNAME }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
