@@ -24,7 +24,7 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-yaml" % "1.15.0",
   "io.circe" %% "circe-core" % circeVersion,
   "io.circe" %% "circe-parser" % circeVersion,
-  "com.swoop" %% "spark-alchemy" % "1.2.1"
+  "com.swoop" %% "spark-alchemy" % "1.2.1",
 )
 
 dependencyOverrides += "org.scala-lang.modules" %% "scala-xml" % "2.4.0"

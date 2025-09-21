@@ -13,5 +13,5 @@ format:
 	sbt scalafmt
 
 test:
-	sbt -J--add-opens=java.base/sun.nio.ch=ALL-UNNAMED test
+	sbt -J--add-opens=java.base/sun.nio.ch=ALL-UNNAMED coverage test coverageReport
 	@make clean
