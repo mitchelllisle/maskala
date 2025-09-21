@@ -2,13 +2,14 @@ package org.mitchelllisle.analysers
 
 import org.apache.spark.sql.{DataFrame, functions => F}
 import java.security.MessageDigest
+import java.time.Instant
 import scala.annotation.tailrec
 
 case class MerkleProof(
                         rootHash: String,
                         recordCount: Long,
                         leafHashes: Seq[String],
-                        timestamp: Long = System.currentTimeMillis()
+                        timestamp: Instant = Instant.now()
                       )
 
 case class DeletionProof(
@@ -96,7 +97,7 @@ object MerkleTree {
       rootHash = rootHash,
       recordCount = recordCount,
       leafHashes = leafHashes,
-      timestamp = System.currentTimeMillis()
+      timestamp = Instant.now()
     )
   }
 
