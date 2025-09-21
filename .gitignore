@@ -69,3 +69,7 @@ project/**/metals.sbt
 
 .bsp
 /project/target/
+
+# sbt installation (should not be committed)
+sbt/
+sbt-*.tgz
