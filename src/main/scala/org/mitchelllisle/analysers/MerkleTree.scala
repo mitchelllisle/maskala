@@ -24,6 +24,17 @@ object MerkleTree {
                             merklePathProofs: Seq[String]
                           )
 
+  /** Main entry point for creating a Merkle proof. This is the standard way to use MerkleTree.
+   *
+   * @param data The DataFrame to create proof for
+   * @param columns Columns to include in leaf hashes
+   * @param idColumn Primary key column
+   * @return MerkleProof containing root hash and metadata
+   */
+  def apply(data: DataFrame, columns: Seq[String], idColumn: String): MerkleProof = {
+    createMerkleProof(data, columns, idColumn)
+  }
+
   private def sha256(input: String): String = {
     MessageDigest.getInstance("SHA-256")
       .digest(input.getBytes("UTF-8"))
@@ -190,19 +201,5 @@ object MerkleTree {
     )
 
     (uniquenessAnalysis, merkleProof)
-  }
-
-  /** Utility method to export Merkle proof to JSON for external verification or storage.
-   *
-   * @param proof The MerkleProof to export
-   * @return JSON string representation
-   */
-  def exportProofAsJson(proof: MerkleProof): String = {
-    s"""{
-      "rootHash": "${proof.rootHash}",
-      "recordCount": ${proof.recordCount},
-      "timestamp": ${proof.timestamp},
-      "leafHashCount": ${proof.leafHashes.length}
-    }"""
   }
 }

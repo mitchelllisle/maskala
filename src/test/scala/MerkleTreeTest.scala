@@ -15,6 +15,24 @@ class MerkleTreeTest extends AnyFlatSpec with SparkFunSuite {
   val columns = Seq("email", "age", "city")
   val idColumn = "user_id"
 
+  "apply" should "be the standard way to create MerkleProof" in {
+    val proof = MerkleTree.apply(testData, columns, idColumn)
+
+    assert(proof.rootHash.nonEmpty)
+    assert(proof.recordCount == 4)
+    assert(proof.leafHashes.length == 4)
+    assert(proof.timestamp > 0)
+  }
+
+  "apply" should "produce same result as createMerkleProof" in {
+    val applyProof = MerkleTree.apply(testData, columns, idColumn)
+    val createProof = MerkleTree.createMerkleProof(testData, columns, idColumn)
+
+    assert(applyProof.rootHash == createProof.rootHash)
+    assert(applyProof.recordCount == createProof.recordCount)
+    assert(applyProof.leafHashes == createProof.leafHashes)
+  }
+
   "createLeafHashes" should "generate unique hashes for each record" in {
     val result = MerkleTree.createLeafHashes(testData, columns, idColumn)
 
@@ -134,16 +152,6 @@ class MerkleTreeTest extends AnyFlatSpec with SparkFunSuite {
     assert(merkleProof.recordCount == 4)
     assert(merkleProof.rootHash.nonEmpty)
     assert(merkleProof.rootHash != "empty_tree")
-  }
-
-  "exportProofAsJson" should "generate valid JSON representation" in {
-    val proof = MerkleTree.createMerkleProof(testData, columns, idColumn)
-    val json = MerkleTree.exportProofAsJson(proof)
-
-    assert(json.contains("\"rootHash\""))
-    assert(json.contains("\"recordCount\""))
-    assert(json.contains("\"timestamp\""))
-    assert(json.contains("\"leafHashCount\""))
   }
 
   "Merkle tree" should "be deterministic with ordered input" in {

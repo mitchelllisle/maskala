@@ -236,19 +236,19 @@ val redactedData = redactor(data)
 
 ## **Merkle Tree Data Retention & Audit Trails**
 
-The `MerkleTreeAnalyser` provides cryptographic proof capabilities for data retention verification and tamper-evident audit trails. This is essential for regulatory compliance (GDPR, CCPA) and proving data deletion without revealing sensitive information.
+The `MerkleTree` provides cryptographic proof capabilities for data retention verification and tamper-evident audit trails. This is essential for regulatory compliance (GDPR, CCPA) and proving data deletion without revealing sensitive information.
 
 ### **Creating Data Integrity Proofs**
 
 Generate cryptographic fingerprints of your datasets that change if any data is modified:
 ```scala
-import org.mitchelllisle.analysers.MerkleTreeAnalyser
+import org.mitchelllisle.analysers.MerkleTree
 
 val spark = SparkSession.builder().getOrCreate()
 val userData = spark.read.option("header", "true").csv("user-data.csv")
 
 // Create tamper-evident proof of current data state
-val dataProof = MerkleTreeAnalyser.createMerkleProof(
+val dataProof = MerkleTree.apply(
   data = userData,
   columns = Seq("email", "age", "location"), // Columns to include in proof
   idColumn = "user_id"
@@ -264,13 +264,13 @@ Prove that specific records were actually deleted (not just hidden) with cryptog
 ```scala
 // Before deletion
 val beforeData = userData
-val beforeProof = MerkleTreeAnalyser.createMerkleProof(beforeData, columns, "user_id")
+val beforeProof = MerkleTree.apply(beforeData, columns, "user_id")
 
 // After user requests deletion
 val afterData = userData.filter($"user_id" =!= "user123")
 
 // Generate deletion proof
-val deletionProof = MerkleTreeAnalyser.verifyDeletion(
+val deletionProof = MerkleTree.verifyDeletion(
   beforeData = beforeData,
   afterData = afterData, 
   deletedIds = Seq("user123"),
@@ -279,15 +279,14 @@ val deletionProof = MerkleTreeAnalyser.verifyDeletion(
 )
 
 // Validate the proof
-val isValidDeletion = MerkleTreeAnalyser.validateDeletionProof(
+val isValidDeletion = MerkleTree.validateDeletionProof(
   deletionProof, 
   expectedDeletions = 1
 )
 
 if (isValidDeletion) {
   println("✓ Deletion cryptographically verified")
-  // Export proof for regulatory compliance
-  val proofJson = MerkleTreeAnalyser.exportProofAsJson(deletionProof.afterProof)
+  // Proof is now validated - no JSON export needed
 }
 ```
 
@@ -295,7 +294,7 @@ if (isValidDeletion) {
 Perform comprehensive analysis combining uniqueness assessment with retention proofs:
 
 ```scala
-val (uniquenessAnalysis, retentionProof) = MerkleTreeAnalyser.combinedPrivacyAnalysis(
+val (uniquenessAnalysis, retentionProof) = MerkleTree.combinedPrivacyAnalysis(
   dataFrame = userData,
   groupByColumns = Seq("age", "location"), // For uniqueness analysis
   userIdColumn = "user_id",
@@ -306,8 +305,7 @@ val (uniquenessAnalysis, retentionProof) = MerkleTreeAnalyser.combinedPrivacyAna
 // Analyze re-identification risks
 uniquenessAnalysis.show()
 
-// Store cryptographic proof for audit trail  
-val auditTrail = MerkleTreeAnalyser.exportProofAsJson(retentionProof)
+// Cryptographic proof is available in retentionProof object
 ```
 
 ## Use Cases
