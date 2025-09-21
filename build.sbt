@@ -1,4 +1,4 @@
-ThisBuild / version := "1.5.0"
+ThisBuild / version := "1.6.0"
 
 ThisBuild / scalaVersion := "2.12.20"
 
@@ -24,7 +24,7 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-yaml" % "1.15.0",
   "io.circe" %% "circe-core" % circeVersion,
   "io.circe" %% "circe-parser" % circeVersion,
-  "com.swoop" %% "spark-alchemy" % "1.2.1"
+  "com.swoop" %% "spark-alchemy" % "1.2.1",
 )
 
 dependencyOverrides += "org.scala-lang.modules" %% "scala-xml" % "2.4.0"

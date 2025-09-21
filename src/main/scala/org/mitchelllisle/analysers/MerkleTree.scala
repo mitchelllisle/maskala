@@ -1,29 +1,28 @@
 package org.mitchelllisle.analysers
 
 import org.apache.spark.sql.{DataFrame, functions => F}
-import org.apache.spark.sql.types._
 import java.security.MessageDigest
+import java.time.Instant
 import scala.annotation.tailrec
+
+case class MerkleProof(
+                        rootHash: String,
+                        recordCount: Long,
+                        leafHashes: Seq[String],
+                        timestamp: Instant = Instant.now()
+                      )
+
+case class DeletionProof(
+                          beforeProof: MerkleProof,
+                          afterProof: MerkleProof,
+                          deletedRecordHashes: Seq[String],
+                          merklePathProofs: Seq[String]
+                        )
 
 /** MerkleTreeAnalyser provides cryptographic proof capabilities for data retention and deletion verification.
  * This complements the KHyperLogLogAnalyser by adding tamper-evident audit trails.
  */
 object MerkleTree {
-
-  case class MerkleProof(
-                          rootHash: String,
-                          recordCount: Long,
-                          leafHashes: Seq[String],
-                          timestamp: Long = System.currentTimeMillis()
-                        )
-
-  case class DeletionProof(
-                            beforeProof: MerkleProof,
-                            afterProof: MerkleProof,
-                            deletedRecordHashes: Seq[String],
-                            merklePathProofs: Seq[String]
-                          )
-
   /** Main entry point for creating a Merkle proof. This is the standard way to use MerkleTree.
    *
    * @param data The DataFrame to create proof for
@@ -98,7 +97,7 @@ object MerkleTree {
       rootHash = rootHash,
       recordCount = recordCount,
       leafHashes = leafHashes,
-      timestamp = System.currentTimeMillis()
+      timestamp = Instant.now()
     )
   }
 
