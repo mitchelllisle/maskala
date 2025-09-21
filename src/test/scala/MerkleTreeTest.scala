@@ -1,6 +1,7 @@
 import org.apache.spark.sql.DataFrame
 import org.mitchelllisle.analysers.MerkleTree
 import org.scalatest.flatspec.AnyFlatSpec
+import java.time.Instant
 
 class MerkleTreeTest extends AnyFlatSpec with SparkFunSuite {
   import spark.implicits._
@@ -21,7 +22,8 @@ class MerkleTreeTest extends AnyFlatSpec with SparkFunSuite {
     assert(proof.rootHash.nonEmpty)
     assert(proof.recordCount == 4)
     assert(proof.leafHashes.length == 4)
-    assert(proof.timestamp > 0)
+    assert(proof.timestamp.isInstanceOf[Instant])
+    assert(proof.timestamp.isBefore(Instant.now().plusSeconds(1)))
   }
 
   "apply" should "produce same result as createMerkleProof" in {
@@ -182,5 +184,15 @@ class MerkleTreeTest extends AnyFlatSpec with SparkFunSuite {
     val hashes2 = result2.orderBy($"user_id").select("leaf_hash").collect().map(_.getString(0))
 
     assert(hashes1.sameElements(hashes2))
+  }
+
+  "timestamp" should "use proper Instant type and be recent" in {
+    val beforeTime = Instant.now().minusSeconds(1)
+    val proof = MerkleTree.createMerkleProof(testData, columns, idColumn)
+    val afterTime = Instant.now().plusSeconds(1)
+
+    assert(proof.timestamp.isInstanceOf[Instant])
+    assert(proof.timestamp.isAfter(beforeTime))
+    assert(proof.timestamp.isBefore(afterTime))
   }
 }
