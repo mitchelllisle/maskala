@@ -1,0 +1,41 @@
+# Example configuration for privacy risk assessment
+# This demonstrates how to use the comprehensive PrivacyRiskAnalyser
+
+catalog: 'healthcare'
+schema: 'patient_data'
+table: 'patient_records'
+
+# Anonymisation strategies (optional - applied before analysis)
+anonymise:
+  - column: 'email'
+    strategy: 'HashingStrategy'
+  - column: 'full_name'
+    strategy: 'MaskingStrategy'
+    parameters:
+      mask: '***REDACTED***'
+  - column: 'age'
+    strategy: 'RangeStrategy'
+    parameters:
+      rangeWidth: 5
+      separator: '-'
+
+# Analysis to perform
+analyse:
+  # Comprehensive privacy risk assessment
+  - type: 'privacy-risk'
+    parameters:
+      k: 5                              # K-anonymity parameter (minimum group size)
+      l: 3                              # L-diversity parameter (minimum distinct sensitive values)
+      userIdColumn: 'patient_id'        # Column that uniquely identifies individuals
+      sensitiveColumn: 'diagnosis'      # Sensitive attribute column
+      groupByColumns: 'age,zipcode,gender'  # Quasi-identifiers for grouping (comma-separated)
+  
+  # Optional: Individual analyses can still be run alongside privacy-risk
+  - type: 'k-anonymity'
+    parameters:
+      k: 5
+      idColumn: 'patient_id'
+  
+  - type: 'uniqueness'
+    parameters:
+      idColumn: 'patient_id'

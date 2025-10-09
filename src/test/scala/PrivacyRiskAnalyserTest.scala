@@ -1,5 +1,5 @@
 import org.apache.spark.sql.DataFrame
-import org.mitchelllisle.analysers.{PrivacyRiskAnalyser, PrivacyRiskParams}
+import org.mitchelllisle.analysers.{PrivacyRiskAnalyser, PrivacyRiskParams, PrivacyRiskFormatter}
 import org.scalatest.flatspec.AnyFlatSpec
 
 class PrivacyRiskAnalyserTest extends AnyFlatSpec with SparkFunSuite {
@@ -162,5 +162,30 @@ class PrivacyRiskAnalyserTest extends AnyFlatSpec with SparkFunSuite {
     // Should have recommendations
     assert(assessment.recommendations.nonEmpty)
     assert(assessment.recommendations.size >= 1)
+  }
+
+  "PrivacyRiskFormatter" should "format assessment results" in {
+    val data: DataFrame = Seq(
+      ("user1", "30", "Male"),
+      ("user2", "30", "Male"),
+      ("user3", "25", "Female"),
+      ("user4", "25", "Female")
+    ).toDF("user_id", "age", "gender")
+
+    val assessment = PrivacyRiskAnalyser(
+      data = data,
+      k = 2,
+      userIdColumn = "user_id",
+      groupByColumns = Seq("age", "gender")
+    )
+
+    val formatted = PrivacyRiskFormatter.format(assessment)
+    assert(formatted.contains("PRIVACY RISK ASSESSMENT"))
+    assert(formatted.contains("OVERALL RISK"))
+    assert(formatted.contains("RECOMMENDATIONS"))
+
+    val summary = PrivacyRiskFormatter.summary(assessment)
+    assert(summary.contains("Risk:"))
+    assert(summary.contains("Score:"))
   }
 }

@@ -248,6 +248,23 @@ println(s"K-Anonymous: ${kMetrics("isKAnonymous")}")
 println(s"Non-compliant groups: ${kMetrics("nonCompliantGroups")}")
 ```
 
+#### Formatted Output
+Use the `PrivacyRiskFormatter` for professional report generation:
+
+```scala
+import org.mitchelllisle.analysers.{PrivacyRiskAnalyser, PrivacyRiskFormatter}
+
+val assessment = PrivacyRiskAnalyser(data, k = 2, userIdColumn = "user_id", groupByColumns = Seq("age", "location"))
+
+// Print a comprehensive formatted report
+PrivacyRiskFormatter.print(assessment)
+
+// Or get a brief summary
+val summary = PrivacyRiskFormatter.summary(assessment)
+println(summary)
+// Output: "Risk: MEDIUM (Score: 0.65) | K-Anon: 0.75 | Unique: 0.55"
+```
+
 #### Using with Configuration
 The Privacy Risk Analyzer can also be integrated into the Anonymiser configuration:
 
@@ -274,6 +291,15 @@ The Privacy Risk Analyzer provides:
 - **Risk Levels**: Categorizes risk as LOW, MEDIUM, HIGH, or CRITICAL
 - **Actionable Recommendations**: Specific suggestions to improve privacy protection
 - **Detailed Metrics**: Access to underlying analysis data for deeper investigation
+
+#### Understanding Risk Levels
+
+| Risk Level | Score Range | Description | Action Required |
+|-----------|-------------|-------------|-----------------|
+| **LOW** | 0.8 - 1.0 | Good privacy protection. Data has strong anonymization properties. | Continue monitoring as data evolves |
+| **MEDIUM** | 0.6 - 0.8 | Acceptable privacy with some concerns. Review before public release. | Consider additional generalization |
+| **HIGH** | 0.4 - 0.6 | Significant privacy concerns. High re-identification risk. | Apply recommended anonymization techniques |
+| **CRITICAL** | 0.0 - 0.4 | Severe privacy risks. Data should not be released as-is. | Substantial anonymization required |
 
 ### Uniqueness Analyzer
 The `UniquenessAnalyser` class in `org.mitchelllisle.reidentifiability` package provides methods to analyze the 
