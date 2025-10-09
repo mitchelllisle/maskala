@@ -2,9 +2,9 @@
 
 # Maskala
 
-Maskala is a privacy engineering toolkit that works with Apache Spark. It aims to provide a number of features for
-analysing, masking, generalising and filtering data to help ensure the identity of individuals in a dataset are protected
-from re-identification.
+Maskala is a comprehensive privacy engineering toolkit built for Apache Spark. It provides enterprise-grade features for
+analyzing, protecting, and managing sensitive data to ensure individuals in datasets are protected from re-identification
+while maintaining compliance with privacy regulations like GDPR and CCPA.
 
 > [!WARNING]
 > Disclaimer: Anonymisation is hard.
@@ -17,6 +17,23 @@ from re-identification.
 
 
 ## Features
+
+### Privacy Risk Assessment
+- **PrivacyRiskScorer**: Comprehensive risk scoring combining uniqueness and k-anonymity metrics
+- **Risk Level Classification**: Automatic categorization (CRITICAL, HIGH, MEDIUM, LOW)
+- **High-Risk Identification**: Pinpoint individuals requiring additional protection
+- **Privacy Standards Validation**: Verify datasets meet organizational privacy thresholds
+
+### Data Retention & Compliance
+- **RetentionAnalyser**: Identify records exceeding retention periods for GDPR/CCPA compliance
+- **Grace Period Support**: Configurable grace periods before deletion
+- **Multi-Date Policies**: Smart retention based on multiple date columns
+- **Audit Reports**: Detailed retention status summaries for compliance documentation
+
+### Cryptographic Verification
+- **Merkle Tree Proofs**: Tamper-evident audit trails for data integrity
+- **Deletion Verification**: Cryptographic proof of record deletion
+- **Combined Privacy Analysis**: Uniqueness assessment with retention proofs
 
 ### Anonymiser
 The Anonymiser class is part of the Scala-based data anonymisation toolkit designed to apply various anonymisation 
@@ -213,6 +230,96 @@ val data = spark.read.option("header", "true").csv("src/test/resources/netflix-s
 val result = UniquenessAnalyser(table)
 ```
 
+### Privacy Risk Scoring
+The `PrivacyRiskScorer` provides comprehensive privacy risk assessment for individuals in your dataset. It combines 
+multiple privacy metrics (uniqueness, k-anonymity) to generate an overall re-identification risk score.
+
+```scala
+import org.mitchelllisle.analysers.PrivacyRiskScorer
+
+val spark = SparkSession.builder.getOrCreate()
+val userData = spark.read.option("header", "true").csv("user-data.csv")
+
+// Calculate risk scores for each individual
+val riskScores = PrivacyRiskScorer.calculateRiskScores(
+  data = userData,
+  quasiIdentifiers = Seq("age", "gender", "zipcode"),
+  idColumn = "user_id"
+)
+
+riskScores.show()
+// Shows: individual_id, uniqueness_score, k_anonymity_score, overall_risk_score, risk_level, group_size
+
+// Identify high-risk individuals who need additional protection
+val highRisk = PrivacyRiskScorer.identifyHighRiskIndividuals(
+  userData, 
+  Seq("age", "gender", "zipcode"), 
+  "user_id",
+  riskThreshold = 0.5
+)
+
+// Generate a summary of risk distribution
+val riskSummary = PrivacyRiskScorer.generateRiskSummary(
+  userData,
+  Seq("age", "gender", "zipcode"),
+  "user_id"
+)
+
+// Check if dataset meets privacy standards
+val isPrivacyCompliant = PrivacyRiskScorer.meetsPrivacyStandard(
+  userData,
+  Seq("age", "gender", "zipcode"),
+  "user_id",
+  maxAcceptableRisk = 0.3,
+  maxHighRiskPercentage = 0.1
+)
+```
+
+### Data Retention & Deletion Management
+The `RetentionAnalyser` helps identify records that should be deleted based on retention policies, essential for GDPR, 
+CCPA, and other privacy regulations.
+
+```scala
+import org.mitchelllisle.analysers.{RetentionAnalyser, RetentionPolicy}
+import java.time.LocalDate
+
+val spark = SparkSession.builder.getOrCreate()
+val userData = spark.read.option("header", "true").csv("user-data.csv")
+
+// Define retention policy: keep data for 365 days with 30-day grace period
+val policy = RetentionPolicy(retentionDays = 365, gracePeriodDays = 30)
+
+// Identify records for deletion
+val retentionResult = RetentionAnalyser.identifyRecordsForDeletion(
+  data = userData,
+  idColumn = "user_id",
+  dateColumn = "last_activity_date",
+  policy = policy
+)
+
+println(s"Records for deletion: ${retentionResult.idsForDeletion}")
+println(s"Records in grace period: ${retentionResult.idsInGracePeriod}")
+
+// For multi-date retention (keeps record if ANY date is recent)
+val multiDateResult = RetentionAnalyser.identifyRecordsForDeletionMultiDate(
+  data = userData,
+  idColumn = "user_id",
+  dateColumns = Seq("last_login_date", "last_purchase_date", "account_created_date"),
+  policy = policy
+)
+
+// Create detailed retention summary
+val summary = RetentionAnalyser.createRetentionSummary(
+  userData,
+  "user_id",
+  "last_activity_date",
+  policy
+)
+
+summary.show()
+// Shows: retention_status, unique_ids, total_records, oldest_date, newest_date
+```
+
 ### Data Redaction
 The Redactor class along with redaction strategies allows for flexible redaction of data in a DataFrame. You can apply 
 multiple redaction strategies including masking, hashing and more.
@@ -231,6 +338,97 @@ val redactor = new Redactor(Seq(
 val data = spark.read.option("header", "true").csv("src/test/resources/netflix-sample.csv")
 val redactedData = redactor(data)
 
+```
+
+## **Complete Privacy Engineering Workflow**
+
+Maskala provides a comprehensive toolkit for privacy engineering. Here's how to use multiple features together:
+
+### Step 1: Assess Privacy Risks
+
+```scala
+import org.mitchelllisle.analysers.PrivacyRiskScorer
+
+// Calculate risk scores for your dataset
+val riskScores = PrivacyRiskScorer.calculateRiskScores(
+  data = userData,
+  quasiIdentifiers = Seq("age", "gender", "zipcode"),
+  idColumn = "user_id"
+)
+
+// Check if dataset meets privacy standards
+val meetsStandard = PrivacyRiskScorer.meetsPrivacyStandard(
+  userData,
+  Seq("age", "gender", "zipcode"),
+  "user_id",
+  maxAcceptableRisk = 0.3
+)
+
+if (!meetsStandard) {
+  println("⚠️ Dataset does not meet privacy standards - apply transformations")
+}
+```
+
+### Step 2: Identify Records for Deletion
+
+```scala
+import org.mitchelllisle.analysers.{RetentionAnalyser, RetentionPolicy}
+
+// Define retention policy
+val policy = RetentionPolicy(retentionDays = 365, gracePeriodDays = 30)
+
+// Find records to delete
+val retentionResult = RetentionAnalyser.identifyRecordsForDeletion(
+  userData,
+  "user_id",
+  "last_activity_date",
+  policy
+)
+
+println(s"${retentionResult.totalRecordsForDeletion} records ready for deletion")
+```
+
+### Step 3: Verify Deletions with Cryptographic Proof
+
+```scala
+import org.mitchelllisle.analysers.MerkleTree
+
+// Create proof before deletion
+val beforeProof = MerkleTree.apply(userData, Seq("email", "age"), "user_id")
+
+// Delete records
+val afterData = userData.filter(!$"user_id".isin(retentionResult.idsForDeletion: _*))
+
+// Generate deletion proof
+val deletionProof = MerkleTree.verifyDeletion(
+  beforeData = userData,
+  afterData = afterData,
+  deletedIds = retentionResult.idsForDeletion,
+  columns = Seq("email", "age"),
+  idColumn = "user_id"
+)
+
+// Validate
+val isValid = MerkleTree.validateDeletionProof(
+  deletionProof,
+  expectedDeletions = retentionResult.totalRecordsForDeletion.toInt
+)
+```
+
+### Step 4: Apply Privacy Transformations
+
+```scala
+// For high-risk individuals, apply stronger protections
+val highRiskIds = PrivacyRiskScorer.identifyHighRiskIndividuals(
+  userData,
+  Seq("age", "gender", "zipcode"),
+  "user_id",
+  riskThreshold = 0.7
+).select("individual_id").collect().map(_.getString(0))
+
+// Apply targeted anonymization
+val anonymiser = new Anonymiser("path/to/config.yaml")
+val protectedData = anonymiser(userData)
 ```
 
 
@@ -310,10 +508,29 @@ uniquenessAnalysis.show()
 
 ## Use Cases
 
-GDPR Right to be Forgotten: Provide mathematical proof of data deletion to users and regulators
-Data Integrity Monitoring: Detect unauthorized changes to sensitive datasets
-Audit Compliance: Create verifiable logs of data operations for regulatory requirements
-Zero-Knowledge Verification: Prove compliance without revealing actual data contents
+**Privacy Risk Assessment & Management:**
+- Automatically identify high-risk individuals in datasets before publication
+- Calculate comprehensive privacy risk scores combining multiple metrics
+- Ensure datasets meet organizational privacy standards before release
+- Prioritize privacy-enhancing transformations for at-risk individuals
+
+**Data Retention & Right to be Forgotten:**
+- Identify customer records exceeding retention periods (GDPR, CCPA compliance)
+- Provide grace periods before deletion to prevent accidental data loss
+- Support multi-date retention policies (keep if ANY activity is recent)
+- Generate audit-ready reports of retention status
+
+**Cryptographic Deletion Verification:**
+- Provide mathematical proof of data deletion to users and regulators
+- Create tamper-evident audit trails for compliance requirements
+- Verify deletions without revealing actual data contents
+- Detect unauthorized changes to sensitive datasets
+
+**Complete Privacy Engineering Workflows:**
+- Assess → Identify → Delete → Verify → Protect pipeline
+- Combine risk scoring, retention analysis, and cryptographic proofs
+- Integrate privacy analysis into data engineering pipelines
+- Automate compliance with privacy regulations
 
 
 > [!NOTE]
