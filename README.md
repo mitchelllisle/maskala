@@ -18,6 +18,26 @@ from re-identification.
 
 ## Features
 
+### **NEW: Privacy Risk Analyzer** 🔒
+Comprehensive privacy risk assessment combining K-Anonymity, L-Diversity, and Uniqueness Analysis to determine how protected individuals are from re-identification. 
+
+**Quick Start:**
+```scala
+import org.mitchelllisle.analysers.{PrivacyRiskAnalyser, PrivacyRiskFormatter}
+
+val assessment = PrivacyRiskAnalyser(
+  data = userData,
+  k = 2,
+  userIdColumn = "user_id", 
+  groupByColumns = Seq("age", "location", "gender")
+)
+
+PrivacyRiskFormatter.print(assessment)
+// Shows: Risk Level, Scores, Detailed Metrics, and Recommendations
+```
+
+See the [Privacy Risk Analyzer](#privacy-risk-analyzer) section below for detailed usage.
+
 ### Anonymiser
 The Anonymiser class is part of the Scala-based data anonymisation toolkit designed to apply various anonymisation 
 strategies to data stored in Apache Spark DataFrames. This toolkit allows for the configuration-driven anonymisation of 
