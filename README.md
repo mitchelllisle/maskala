@@ -197,6 +197,84 @@ val result = kAnon.removeLessThanKRows(data)
 * */
 ```
 
+### Privacy Risk Analyzer
+The `PrivacyRiskAnalyser` provides comprehensive privacy risk assessment by combining multiple privacy metrics 
+(K-Anonymity, L-Diversity, and Uniqueness Analysis) to evaluate how protected individuals are from re-identification. 
+It provides an overall risk score, risk level classification, and actionable recommendations.
+
+#### Basic Privacy Risk Assessment
+```scala
+import org.apache.spark.sql.SparkSession
+import org.mitchelllisle.analysers.PrivacyRiskAnalyser
+
+val spark = SparkSession.builder.getOrCreate()
+val data = spark.read.option("header", "true").csv("user-data.csv")
+
+// Assess privacy risk using k-anonymity and uniqueness
+val assessment = PrivacyRiskAnalyser(
+  data = data,
+  k = 2,  // Minimum group size for k-anonymity
+  userIdColumn = "user_id",
+  groupByColumns = Seq("age", "location", "gender")
+)
+
+println(s"Overall Risk Level: ${assessment.overallRiskLevel}")  // LOW, MEDIUM, HIGH, or CRITICAL
+println(s"Overall Risk Score: ${assessment.overallRiskScore}")  // 0.0 to 1.0 (higher is safer)
+println(s"K-Anonymity Score: ${assessment.kAnonymityScore}")
+println(s"Uniqueness Score: ${assessment.uniquenessScore}")
+
+// Get actionable recommendations
+assessment.recommendations.foreach(println)
+```
+
+#### Advanced Assessment with L-Diversity
+For datasets with sensitive attributes, include L-Diversity analysis:
+
+```scala
+val assessment = PrivacyRiskAnalyser(
+  data = data,
+  k = 2,  // K-anonymity parameter
+  l = 3,  // L-diversity parameter  
+  userIdColumn = "user_id",
+  sensitiveColumn = "medical_condition",  // Sensitive attribute column
+  groupByColumns = Seq("age", "zipcode")
+)
+
+println(s"L-Diversity Score: ${assessment.lDiversityScore.get}")
+
+// Access detailed metrics
+val kMetrics = assessment.metrics("kAnonymity").asInstanceOf[Map[String, Any]]
+println(s"K-Anonymous: ${kMetrics("isKAnonymous")}")
+println(s"Non-compliant groups: ${kMetrics("nonCompliantGroups")}")
+```
+
+#### Using with Configuration
+The Privacy Risk Analyzer can also be integrated into the Anonymiser configuration:
+
+```yaml
+catalogue: 'your_catalog'
+schema: 'your_schema'
+table: 'your_table'
+anonymise:
+  - column: 'email'
+    strategy: 'HashingStrategy'
+analyse:
+  - type: 'privacy-risk'
+    parameters:
+      k: 2
+      l: 3
+      userIdColumn: 'user_id'
+      sensitiveColumn: 'diagnosis'
+      groupByColumns: 'age,location'
+```
+
+The Privacy Risk Analyzer provides:
+- **Comprehensive Assessment**: Combines multiple privacy metrics for holistic evaluation
+- **Risk Scoring**: 0.0-1.0 score where higher values indicate better privacy protection
+- **Risk Levels**: Categorizes risk as LOW, MEDIUM, HIGH, or CRITICAL
+- **Actionable Recommendations**: Specific suggestions to improve privacy protection
+- **Detailed Metrics**: Access to underlying analysis data for deeper investigation
+
 ### Uniqueness Analyzer
 The `UniquenessAnalyser` class in `org.mitchelllisle.reidentifiability` package provides methods to analyze the 
 uniqueness of values within a DataFrame using Spark. Uniqueness is a proxy for re-identifiability, an important privacy 

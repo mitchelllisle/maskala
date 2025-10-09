@@ -151,6 +151,19 @@ class Anonymiser(configFilePath: String) {
           val output = new LDiversity(params.l).apply(data, params.idColumn)
           output.show()
           output
+        case "privacy-risk" =>
+          val params = getParams[PrivacyRiskParams](analysisConfig.parameters)
+          val assessment = PrivacyRiskAnalyser(data, params)
+          println(s"\n=== Privacy Risk Assessment ===")
+          println(s"Overall Risk Level: ${assessment.overallRiskLevel}")
+          println(s"Overall Risk Score: ${assessment.overallRiskScore}")
+          println(s"K-Anonymity Score: ${assessment.kAnonymityScore}")
+          assessment.lDiversityScore.foreach(score => println(s"L-Diversity Score: $score"))
+          println(s"Uniqueness Score: ${assessment.uniquenessScore}")
+          println(s"\nRecommendations:")
+          assessment.recommendations.foreach(rec => println(s"  - $rec"))
+          println("=" * 35)
+          data
         case _ => throw new ConfigError(s"${analysisConfig.`type`} is not a recognised analyser")
       }
     }
