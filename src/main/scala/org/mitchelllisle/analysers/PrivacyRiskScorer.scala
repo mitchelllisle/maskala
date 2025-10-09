@@ -57,7 +57,7 @@ object PrivacyRiskScorer {
         // Higher k = lower risk, normalize to 0-1 scale where 1 is high risk
         F.when(F.col("group_size") === 1, 1.0) // Unique = maximum risk
           .when(F.col("group_size") >= 100, 0.0) // Large groups = minimal risk
-          .otherwise(1.0 - (F.log(F.col("group_size")) / F.log(F.lit(100))))
+          .otherwise(F.lit(1.0) - (F.log(F.col("group_size")) / F.log(F.lit(100))))
       )
       .withColumn(
         "uniqueness_score",
