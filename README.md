@@ -431,6 +431,9 @@ val anonymiser = new Anonymiser("path/to/config.yaml")
 val protectedData = anonymiser(userData)
 ```
 
+> [!TIP]
+> See the complete end-to-end workflow example in [examples/PrivacyWorkflowExample.scala](examples/PrivacyWorkflowExample.scala)
+
 
 ## **Merkle Tree Data Retention & Audit Trails**
 
