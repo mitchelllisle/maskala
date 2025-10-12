@@ -73,6 +73,135 @@ analyse:
 These methods are tools to aid in understanding and reducing re-identification risks and should be used as part of a
 broader data protection strategy. Remember, no single method can ensure total data privacy and security.
 
+### Privacy Risk Assessment
+
+The Privacy Risk Assessment module provides a comprehensive evaluation of re-identification risks in your Spark datasets. It automatically detects quasi-identifiers, calculates multiple privacy metrics (k-anonymity, l-diversity, t-closeness), and generates actionable recommendations for further anonymization.
+
+#### Key Features:
+- **Automatic Quasi-Identifier Detection**: Identifies columns that could be used to re-identify individuals
+- **Multi-Metric Analysis**: Evaluates k-anonymity, l-diversity, and t-closeness simultaneously
+- **Risk Scoring**: Provides an overall risk score (0-100) for easy assessment
+- **Actionable Recommendations**: Generates specific recommendations to improve privacy
+- **Seamless Integration**: Works naturally with existing Spark workflows
+
+#### Basic Usage
+
+```scala
+import org.apache.spark.sql.SparkSession
+import org.mitchelllisle.analysers.{PrivacyRiskAssessment, PrivacyRiskParams}
+
+val spark = SparkSession.builder().getOrCreate()
+import spark.implicits._
+
+// Sample healthcare data
+val patientData = Seq(
+  ("1", "30", "Male", "12345", "Heart Disease"),
+  ("2", "30", "Male", "12345", "Diabetes"),
+  ("3", "30", "Male", "12345", "Flu"),
+  ("4", "45", "Female", "67890", "Heart Disease"),
+  ("5", "45", "Female", "67890", "Cancer"),
+  ("6", "45", "Female", "67890", "Flu")
+).toDF("patient_id", "age", "gender", "zipcode", "disease")
+
+// Define privacy assessment parameters
+val params = PrivacyRiskParams(
+  quasiIdentifiers = Seq("age", "gender", "zipcode"),
+  sensitiveAttribute = Some("disease"),
+  idColumn = Some("patient_id")
+)
+
+// Perform comprehensive risk assessment
+val result = PrivacyRiskAssessment.assess(
+  data = patientData,
+  params = params,
+  kThreshold = 3,      // Minimum group size
+  lThreshold = 2,      // Minimum diversity
+  tThreshold = 0.3     // Maximum distribution distance
+)
+
+// Generate and print detailed report
+val report = PrivacyRiskAssessment.generateReport(result)
+println(report)
+```
+
+**Output:**
+```
+================================================================================
+PRIVACY RISK ASSESSMENT REPORT
+================================================================================
+
+Overall Risk Score: 15/100
+Risk Level: LOW ✓
+
+--------------------------------------------------------------------------------
+PRIVACY METRICS
+--------------------------------------------------------------------------------
+k-Anonymity Score: 3
+l-Diversity Score: 3
+t-Closeness Score: 0.167
+Uniqueness Risk: 0.00%
+
+--------------------------------------------------------------------------------
+RECOMMENDATIONS
+--------------------------------------------------------------------------------
+1. k-anonymity: PASSED - Minimum group size is 3 (threshold: 3).
+2. l-diversity: PASSED - Minimum diversity is 3 (threshold: 2).
+3. t-closeness: PASSED - Maximum distribution distance is 0.167 (threshold: 0.300).
+4. Uniqueness: PASSED - No highly unique records detected.
+
+================================================================================
+```
+
+#### Automatic Quasi-Identifier Detection
+
+Let the module automatically detect potential quasi-identifiers based on column names and cardinality:
+
+```scala
+val employeeData = Seq(
+  ("1", "30", "Male", "12345", "Engineering", "80000"),
+  ("2", "25", "Female", "12346", "Marketing", "70000"),
+  ("3", "30", "Male", "12347", "Engineering", "85000")
+).toDF("employee_id", "age", "gender", "zipcode", "department", "salary")
+
+// Auto-detect quasi-identifiers
+val detectedQuasiIds = PrivacyRiskAssessment.detectQuasiIdentifiers(
+  data = employeeData,
+  excludeColumns = Seq("employee_id", "salary") // Exclude ID and sensitive columns
+)
+
+println(s"Detected quasi-identifiers: ${detectedQuasiIds.mkString(", ")}")
+// Output: Detected quasi-identifiers: age, gender, zipcode
+```
+
+#### Understanding the Results
+
+The `RiskAssessmentResult` contains:
+- **kAnonymityScore**: Minimum group size in the dataset (higher is better)
+- **lDiversityScore**: Minimum diversity in sensitive attributes (higher is better)
+- **tClosenessScore**: Maximum distribution distance from overall distribution (lower is better)
+- **uniquenessRisk**: Ratio of highly identifiable records (lower is better)
+- **overallRiskScore**: Composite risk score from 0-100 (0 = lowest risk, 100 = highest risk)
+- **recommendations**: List of specific actions to improve privacy
+
+#### Integration with Anonymisation Workflow
+
+Use the risk assessment to guide your anonymization strategy:
+
+```scala
+// Step 1: Assess initial risk
+val initialRisk = PrivacyRiskAssessment.assess(rawData, params)
+println(s"Initial Risk Score: ${initialRisk.overallRiskScore.toInt}/100")
+
+// Step 2: Apply anonymization based on recommendations
+val anonymiser = new Anonymiser("config.yaml")
+val anonymizedData = anonymiser(rawData)
+
+// Step 3: Re-assess to verify improvement
+val finalRisk = PrivacyRiskAssessment.assess(anonymizedData, params)
+println(s"Final Risk Score: ${finalRisk.overallRiskScore.toInt}/100")
+println(s"Risk Reduction: ${(initialRisk.overallRiskScore - finalRisk.overallRiskScore).toInt} points")
+```
+
 ### KAnonymity
 K-Anonymity is a concept in data privacy that aims to ensure an individual's information cannot be distinguished from a
 least k-1 others in a dataset. Essentially, it means that each individual's data is indistinguishable from at least k-1 
@@ -195,6 +324,65 @@ val result = kAnon.removeLessThanKRows(data)
 ("30", "Male"),
 ("30", "Male"),
 * */
+```
+
+### T-Closeness
+T-Closeness is a privacy principle that extends both K-Anonymity and ℓ-Diversity by requiring that the distribution of 
+sensitive attributes in any equivalence class is close to the distribution in the overall dataset. While ℓ-Diversity 
+ensures diversity of sensitive values, T-Closeness goes further by preventing skewed distributions that could still 
+reveal sensitive information. The "closeness" is measured using distance metrics between distributions, with a threshold 
+`t` that defines the maximum allowable distance. T-Closeness helps protect against attribute disclosure by ensuring that 
+the sensitive attribute values in each group don't differ significantly from the overall population distribution.
+
+#### 1: Assessing T-Closeness
+You can assess if your dataset satisfies T-Closeness by using the `isTClose` method:
+
+```scala
+import org.mitchelllisle.analysers.TCloseness
+import org.apache.spark.sql.SparkSession
+
+val spark = SparkSession.builder().getOrCreate()
+
+import spark.implicits._
+
+val data = Seq(
+  ("A", "Disease1"),
+  ("A", "Disease2"),
+  ("A", "Disease3"),
+  ("B", "Disease1"),
+  ("B", "Disease2"),
+  ("B", "Disease3")
+).toDF("QuasiIdentifier", "SensitiveAttribute")
+
+val tClose = new TCloseness(t = 0.3) // Maximum distance threshold
+val evaluated = tClose.isTClose(data, "SensitiveAttribute") // returns true
+```
+
+#### 2. Filtering out rows that aren't T-Close
+If you want a dataset that only contains the rows that meet T-Closeness, you can use the `removeLessThanTRows` method:
+
+```scala
+import org.mitchelllisle.analysers.TCloseness
+import org.apache.spark.sql.SparkSession
+
+val spark = SparkSession.builder().getOrCreate()
+
+import spark.implicits._
+
+val data = Seq(
+  ("A", "Disease1"),
+  ("A", "Disease1"),
+  ("A", "Disease1"),
+  ("B", "Disease2"),
+  ("B", "Disease2"),
+  ("B", "Disease2")
+).toDF("QuasiIdentifier", "SensitiveAttribute")
+
+val tClose = new TCloseness(t = 0.2)
+
+val result = tClose.removeLessThanTRows(data, "SensitiveAttribute")
+// Result contains only equivalence classes where the distribution of SensitiveAttribute
+// is within the threshold distance from the overall distribution
 ```
 
 ### Uniqueness Analyzer
