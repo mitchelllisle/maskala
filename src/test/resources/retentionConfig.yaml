@@ -1,0 +1,12 @@
+catalog: 'main'
+schema: 'customer_data'
+table: 'user_activity'
+anonymise: []
+analyse:
+  - type: 'retention'
+    parameters:
+      idColumn: 'user_id'
+      timestampColumn: 'last_activity_date'
+      policyName: 'GDPR_DEFAULT'
+      retentionDays: '365'
+      description: 'GDPR default 1-year retention policy'

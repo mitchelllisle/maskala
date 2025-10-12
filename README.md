@@ -233,6 +233,171 @@ val redactedData = redactor(data)
 
 ```
 
+### Retention Detection
+The `RetentionDetector` helps identify customers whose data exceeds specified retention schedules, ensuring compliance 
+with data retention policies (GDPR, CCPA, etc.). It scans datasets for retention-relevant fields and reports customers 
+who are overdue for data deletion or anonymization.
+
+#### Basic Usage
+
+```scala
+import org.mitchelllisle.analysers.{RetentionDetector, RetentionPolicy}
+import java.time.LocalDate
+
+val spark = SparkSession.builder().getOrCreate()
+val userData = spark.read.option("header", "true").csv("user-activity.csv")
+
+// Define a retention policy
+val gdprPolicy = RetentionPolicy(
+  name = "GDPR_DEFAULT",
+  retentionDays = 365,
+  description = Some("GDPR 1-year retention policy")
+)
+
+// Detect violations
+val violations = RetentionDetector.detectViolations(
+  data = userData,
+  idColumn = "user_id",
+  timestampColumn = "last_activity_date",
+  policy = gdprPolicy
+)
+
+violations.show()
+// Returns: customerId, daysPastRetention, lastActivity, policyName
+```
+
+#### Detection with Summary Statistics
+
+Get both violations and compliance metrics:
+
+```scala
+val (violations, summary) = RetentionDetector.detectViolationsWithSummary(
+  userData,
+  "user_id",
+  "last_activity_date",
+  gdprPolicy
+)
+
+println(summary)
+// Prints:
+// Retention Policy: GDPR_DEFAULT
+// Retention Period: 365 days
+// Total Records: 10000
+// Violations Found: 1234
+// Compliance Rate: 87.66%
+// Average Days Past Retention: 45.2
+```
+
+#### Multiple Retention Policies
+
+Check against multiple policies simultaneously:
+
+```scala
+val policies = Seq(
+  RetentionPolicy("SHORT_TERM", 30, Some("30-day policy")),
+  RetentionPolicy("MEDIUM_TERM", 90, Some("90-day policy")),
+  RetentionPolicy("LONG_TERM", 365, Some("1-year policy"))
+)
+
+val allViolations = RetentionDetector.detectMultiplePolicies(
+  userData,
+  "user_id",
+  "last_activity_date",
+  policies
+)
+```
+
+#### Generate Action Plan
+
+Get automated recommendations for handling violations:
+
+```scala
+val actionPlan = RetentionDetector.generateActionPlan(
+  violations,
+  actionThresholdDays = 30
+)
+
+actionPlan.show()
+// Returns: customerId, daysPastRetention, lastActivity, policyName, 
+//          recommendedAction (Review/Anonymize/Delete), priority (High/Medium/Low)
+```
+
+#### Analyze Violation Patterns
+
+Group violations by time ranges:
+
+```scala
+val violationsByRange = RetentionDetector.groupViolationsByRange(violations)
+violationsByRange.show()
+// Returns:
+// violationRange | policyName | recordCount | avgDaysPast | maxDaysPast
+// 0-30 days      | GDPR       | 150         | 15.2        | 30
+// 31-90 days     | GDPR       | 234         | 62.5        | 90
+// 91-180 days    | GDPR       | 128         | 135.8       | 180
+// etc.
+```
+
+#### Supported Column Types
+
+The retention detector automatically handles different timestamp formats:
+- **TimestampType**: Standard Spark timestamp columns
+- **DateType**: Date-only columns
+- **StringType**: String dates (automatically converted with `to_timestamp`)
+
+```scala
+// Works with different column types
+val timestampData = df.withColumn("ts", col("date_string").cast(TimestampType))
+val violations1 = RetentionDetector.apply(timestampData, "id", "ts", policy)
+
+val dateData = df.withColumn("dt", col("date_string").cast(DateType))
+val violations2 = RetentionDetector.apply(dateData, "id", "dt", policy)
+
+val stringData = df // date_string as is
+val violations3 = RetentionDetector.apply(stringData, "id", "date_string", policy)
+```
+
+#### Integration Example: Automated Cleanup Pipeline
+
+```scala
+import org.mitchelllisle.analysers.{RetentionDetector, RetentionPolicy}
+import org.mitchelllisle.Anonymiser
+
+// Step 1: Detect violations
+val policy = RetentionPolicy("GDPR", 365)
+val (violations, summary) = RetentionDetector.detectViolationsWithSummary(
+  userData, "user_id", "last_activity_date", policy
+)
+
+// Step 2: Generate action plan
+val actionPlan = RetentionDetector.generateActionPlan(violations, 30)
+
+// Step 3: Handle based on action plan
+val toDelete = actionPlan.filter(col("recommendedAction") === "Delete")
+val toAnonymize = actionPlan.filter(col("recommendedAction") === "Anonymize")
+
+// Delete records (example)
+val cleanedData = userData.join(
+  toDelete.select("customerId"),
+  userData("user_id") === toDelete("customerId"),
+  "left_anti"
+)
+
+// Anonymize records (example)
+val anonymiser = new Anonymiser("anonymization-config.yaml")
+val anonymizedData = anonymiser.runAnonymisers(
+  userData.join(toAnonymize.select("customerId"), 
+                userData("user_id") === toAnonymize("customerId"))
+)
+
+// Step 4: Create audit proof
+val afterProof = MerkleTree.apply(cleanedData, Seq("email", "age"), "user_id")
+println(s"Cleanup completed. New data fingerprint: ${afterProof.rootHash}")
+```
+
+> [!TIP]
+> For a complete end-to-end example including deletion verification and audit logging, see 
+> `src/main/scala/org/mitchelllisle/examples/RetentionPipelineExample.scala`
+
 
 ## **Merkle Tree Data Retention & Audit Trails**
 
