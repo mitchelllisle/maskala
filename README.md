@@ -394,6 +394,10 @@ val afterProof = MerkleTree.apply(cleanedData, Seq("email", "age"), "user_id")
 println(s"Cleanup completed. New data fingerprint: ${afterProof.rootHash}")
 ```
 
+> [!TIP]
+> For a complete end-to-end example including deletion verification and audit logging, see 
+> `src/main/scala/org/mitchelllisle/examples/RetentionPipelineExample.scala`
+
 
 ## **Merkle Tree Data Retention & Audit Trails**
 
